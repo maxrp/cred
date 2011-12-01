@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import gnupg
+import getpass
+import os
+import sys
+import yaml
+
+class Creds(object):
+    def __init__(self, config="conf.yaml"):
+        stream = open(config, "r")
+        
+        config = self.load_yaml(stream)
+        
+        # copy all the config keys into self
+        for attr in config:
+            self.__dict__[attr] = config[attr]
+       
+        self.gpg_agent = os.environ.get("GPG_AGENT_INFO", False)
+
+        if self.use_agent and self.gpg_agent:
+            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=True)
+        elif not self.use_agent or not self.gpg_agent:
+            self.passphrase = getpass.getpass()
+            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, passphrase=self.passphrase, verbose=True)
+
+    def load(self, credfile):
+        try:
+            stream = file(credfile, "rb")
+            if not self.use_agent: 
+                decrypted = str(self.gpg.decrypt_file(stream, passphrase=self.passphrase))
+            else:
+                decrypted = str(self.gpg.decrypt_file(stream))
+
+            if not decrypted:
+                raise Exception("No Contents", "the file %s has no contents" % credfile)
+            else:
+                credentials = yaml.load(decrypted)
+                return credentials
+
+        except IOError as (err, msg):
+            print "I/O error({0}): {1}".format(err, msg)
+        except:
+            raise
+
+    def load_yaml(self, data):
+        try:
+            data = yaml.load(data)
+            return data
+        except yaml.YAMLError:
+            raise
+
+def main():
+    try:
+        creds = Creds()
+    except yaml.YAMLError, err:
+        sys.stderr.write('%s\n' % str(err))
+        status = 1
+    except Exception, err:
+        sys.stderr.write('%s\n' % str(err))
+        status = 1
+    else:
+        cred = creds.load("asshats.org.yaml.asc")
+        print cred
+        status = 0
+    finally:
+        return status
+
+        
+    """
+    if config['use_agent'] and os.environ.has_key("GPG_AGENT_INFO"):
+        creds = Creds('/home/maxp/.gnupg/')
+    else:
+        creds = Creds('/home/maxp/.gnupg/', agent=False, passphrase=getpass.getpass())
+
+    cred = creds.load_cred("schema.yaml.asc")
+    print cred
+    print cred['password']
+    """
+    """
+    """
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,10 @@
+---
+schema:
+    username: None
+    password: None
+    URL: None
+
+use_agent: True
+gpg_home: "~/.gnupg"
+passwords: "~/.gnupg/creds/"
+default_recipients: [None]
