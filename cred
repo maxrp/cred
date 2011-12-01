@@ -66,19 +66,5 @@ def main():
     finally:
         return status
 
-        
-    """
-    if config['use_agent'] and os.environ.has_key("GPG_AGENT_INFO"):
-        creds = Creds('/home/maxp/.gnupg/')
-    else:
-        creds = Creds('/home/maxp/.gnupg/', agent=False, passphrase=getpass.getpass())
-
-    cred = creds.load_cred("schema.yaml.asc")
-    print cred
-    print cred['password']
-    """
-    """
-    """
-
 if __name__ == "__main__":
     sys.exit(main())
