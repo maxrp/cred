@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import gnupg
 import getpass
 import os
@@ -62,14 +63,25 @@ class Creds(object):
             raise
 
 def main():
+    parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
+    parser.add_argument('name', help="The name of the credential to look up.")
+    parser.add_argument('fields', default=False, nargs="*", help="The name of the field or fields to retrieve.")
+    
+    arg = parser.parse_args()
+
     try:
         creds = Creds()
-        cred = creds.get("asshats.org")
+        cred = creds.get(arg.name)
     except Exception, (errno, strerr):
         sys.stderr.write('%s: %s\n' % (errno, strerr))
         status = 1
     else:
-        print cred
+        if arg.fields:
+            for field in arg.fields:
+                print cred[field]
+        else:
+            for field in cred:
+                print "%s: %s" % (field, cred[field])
         status = 0
     finally:
         return status
