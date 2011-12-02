@@ -34,13 +34,17 @@ class Creds(object):
             raise
         else:
             return stream
-            
+    
+    def get_path(self, cred):
+        return self.passwords + cred + self.extension
+
     def get(self, cred):
-        encrypted = self.__read(cred, "rb")
+        path = self.get_path(cred)
+        encrypted = self.__read(path, "rb")
         decrypted = str(self.gpg.decrypt_file(encrypted))
 
         if not decrypted:
-            raise Exception("No Contents", "the file %s has no contents" % cred)
+            raise Exception("No Contents", "the file %s has no contents" % path)
         else:
             try:
                 credentials = yaml.load(decrypted)
@@ -60,7 +64,7 @@ class Creds(object):
 def main():
     try:
         creds = Creds()
-        cred = creds.get("asshats.org.yaml.asc")
+        cred = creds.get("asshats.org")
     except Exception, (errno, strerr):
         sys.stderr.write('%s: %s\n' % (errno, strerr))
         status = 1
