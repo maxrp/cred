@@ -83,8 +83,8 @@ def main():
             for field in cred:
                 print "%s: %s" % (field, cred[field])
         status = 0
-    finally:
-        return status
+    
+    return status
 
 if __name__ == "__main__":
     sys.exit(main())
