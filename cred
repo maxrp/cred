@@ -7,41 +7,43 @@ import sys
 import yaml
 
 class Creds(object):
-    def __init__(self, config="conf.yaml"):
-        stream = open(config, "r")
-        
-        config = self.load_yaml(stream)
+    def __init__(self, config="conf.yaml", verbose=False):
+        config = self.load_yaml(self.__read(config, "r"))
         
         # copy all the config keys into self
         for attr in config:
             self.__dict__[attr] = config[attr]
-       
-        self.gpg_agent = os.environ.get("GPG_AGENT_INFO", False)
 
-        if self.use_agent and self.gpg_agent:
-            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=True)
-        elif not self.use_agent or not self.gpg_agent:
+        # check to see if there's actually an agent in the env
+        self.agent = os.environ.get("GPG_AGENT_INFO", False)
+        self.verbose = verbose
+
+        # wanting to use an agent is cool, but if you don't have one...
+        if self.use_agent and self.agent:
+            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
+        else:
+            # whether this is the setting or the fallback, it's definitely False henceforth
+            self.use_agent = False
             self.passphrase = getpass.getpass()
-            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, passphrase=self.passphrase, verbose=True)
+            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, passphrase=self.passphrase, verbose=self.verbose)
 
-    def load(self, credfile):
+    def __read(self, path, mode):
         try:
-            stream = file(credfile, "rb")
-            if not self.use_agent: 
-                decrypted = str(self.gpg.decrypt_file(stream, passphrase=self.passphrase))
-            else:
-                decrypted = str(self.gpg.decrypt_file(stream))
+            stream = open(path, mode)
+        except IOError:
+            raise
+        else:
+            return stream
+            
+    def get(self, cred):
+        encrypted = self.__read(cred, "rb")
+        decrypted = str(self.gpg.decrypt_file(encrypted))
 
             if not decrypted:
                 raise Exception("No Contents", "the file %s has no contents" % credfile)
             else:
                 credentials = yaml.load(decrypted)
                 return credentials
-
-        except IOError as (err, msg):
-            print "I/O error({0}): {1}".format(err, msg)
-        except:
-            raise
 
     def load_yaml(self, data):
         try:
@@ -53,14 +55,11 @@ class Creds(object):
 def main():
     try:
         creds = Creds()
-    except yaml.YAMLError, err:
-        sys.stderr.write('%s\n' % str(err))
-        status = 1
-    except Exception, err:
-        sys.stderr.write('%s\n' % str(err))
+        cred = creds.get("asshats.org.yaml.asc")
+    except Exception, (errno, strerr):
+        sys.stderr.write('%s: %s\n' % (errno, strerr))
         status = 1
     else:
-        cred = creds.load("asshats.org.yaml.asc")
         print cred
         status = 0
     finally:
