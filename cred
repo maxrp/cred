@@ -31,8 +31,8 @@ class Creds(object):
     def __read(self, path, mode):
         try:
             stream = open(path, mode)
-        except IOError:
-            raise
+        except IOError, err:
+            raise Exception(err.strerror, err.filename)
         else:
             return stream
     
