@@ -5,6 +5,7 @@ schema:
     URL: None
 
 use_agent: True
-gpg_home: "~/.gnupg"
-passwords: "~/.gnupg/creds/"
+gpg_home: "/home/user/.gnupg"
+passwords: "/home/user/.gnupg/creds/"
+extension: ".yaml.asc"
 default_recipients: [None]
