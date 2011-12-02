@@ -65,7 +65,8 @@ class Creds(object):
 def main():
     parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
     parser.add_argument('name', help="The name of the credential to look up.")
-    parser.add_argument('fields', default=False, nargs="*", help="The name of the field or fields to retrieve.")
+    parser.add_argument('fields', default=False, nargs="*",
+        help="The name of the field or fields to retrieve. If no fields are specified, all fields are returned.")
     
     arg = parser.parse_args()
 
