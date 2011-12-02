@@ -8,6 +8,7 @@ Requirements
 1. [python-gnupg][1]
 2. [PyYAML][2]
 3. [GnuPG][3]
+4. Python 2.7
 
 Setup
 -----
