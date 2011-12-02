@@ -39,10 +39,15 @@ class Creds(object):
         encrypted = self.__read(cred, "rb")
         decrypted = str(self.gpg.decrypt_file(encrypted))
 
-            if not decrypted:
-                raise Exception("No Contents", "the file %s has no contents" % credfile)
-            else:
+        if not decrypted:
+            raise Exception("No Contents", "the file %s has no contents" % cred)
+        else:
+            try:
                 credentials = yaml.load(decrypted)
+            except yaml.YAMLError, err:
+                # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
+                raise Exception(err.context, err.problem)
+            else:
                 return credentials
 
     def load_yaml(self, data):
