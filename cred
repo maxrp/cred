@@ -63,7 +63,7 @@ class Creds(object):
             raise
 
     def dump_schema(self):
-        print yaml.dump(self.schema, default_flow_style=False)
+        return yaml.dump(self.schema, default_flow_style=False)
 
 def main():
     parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
@@ -99,7 +99,7 @@ def main():
                     for field in cred:
                         print "%s: %s" % (field, cred[field])
         elif arg.dump_schema:
-            creds.dump_schema()
+            print creds.dump_schema()
         status = 0
     
     return status
