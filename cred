@@ -64,6 +64,7 @@ class Creds(object):
 
 def main():
     parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
+    parser.add_argument('-l', dest='list_keys', action='store_true', help='List the keys in a credential.')
     parser.add_argument('name', help="The name of the credential to look up.")
     parser.add_argument('fields', default=False, nargs="*",
         help="The name of the field or fields to retrieve. If no fields are specified, all fields are returned.")
@@ -81,8 +82,13 @@ def main():
             for field in arg.fields:
                 print cred[field]
         else:
-            for field in cred:
-                print "%s: %s" % (field, cred[field])
+            # only list the available keys in the credential
+            if arg.list_keys:
+                for field in cred:
+                    print field
+            else:
+                for field in cred:
+                    print "%s: %s" % (field, cred[field])
         status = 0
     
     return status
