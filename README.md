@@ -1,7 +1,14 @@
 Cred: a tool for querying GPG encrypted YAML format credentials
 ===============================================================
 
-It doesn't really do much useful yet.
+A tool for storing passwords in a regular and readily manipulable encrypted format.
+
+Right now it's pretty good at:
+  - Retrieving the credentials for a domain
+    - all at once or by attribute
+    - listing attributes
+  - Writing new credentials for a domain
+  - Using gpg-agent
 
 Requirements
 ------------
@@ -9,16 +16,29 @@ Requirements
 - [PyYAML][2]
 - [GnuPG][3]
   - A GPG private key and some good sense
+- [gnupg.vim][4] (pretty much vital for anyone dealing with gpg encrypted text files)
 - Python 2.7
+- Credentials for some stuff you want to encrypt with your gpg private key to a list of N recipients
+  - I'm pretty sure this tool could be coerced to work with GnuPG in symmetric mode, but I haven't tried
 
 Setup
 -----
+1. Ensure you have the materials listed above 
 1. Copy the example config to it's proper name:
         
         cp conf.example.yaml conf.yaml 
-2. Edit conf.yaml to your liking
-3. Wish this tool had an option to populate an encrypted file addressed to your configured recipients with it's schema dumper
-4. Figure out how to use [gnupg.vim][4] instead until I get around to writing the afformentioned component
+2. Edit conf.yaml to your liking (Tip: make sure default\_recipients is a list including at least "your name")
+4. try it out!
+        
+        ./cred --help
+        ./cred --save example.net
+        ./cred example.net
+
+Tips
+----
+The quickest way to get a workable gpg-agent environment for any scenario:
+        
+        gpg-agent --pinentry-program /usr/bin/pinentry-curses --daemon /bin/bash
 
 [1]: http://pypi.python.org/pypi/python-gnupg   "python-gnupg"
 [2]: http://pypi.python.org/pypi/PyYAML         "PyYAML"
