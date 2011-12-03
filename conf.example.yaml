@@ -2,7 +2,7 @@
 schema:
     username: None
     password: None
-    URL: None
+    uri: None
 
 use_agent: True
 gpg_home: "/home/user/.gnupg"
