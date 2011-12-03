@@ -72,6 +72,8 @@ class Creds(object):
         else:
             encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients)
         new_cred_file.write(str(encrypted_cred))
+        new_cred_file.flush()
+        new_cred_file.close()
         return self.load_yaml(new_cred)
 
     def get_path(self, cred):
