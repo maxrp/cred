@@ -88,20 +88,16 @@ class Creds(object):
         if not decrypted:
             raise Exception("No Contents", "the file %s has no contents" % path)
         else:
-            try:
-                credentials = yaml.load(decrypted)
-            except yaml.YAMLError, err:
-                # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
-                raise Exception(err.context, err.problem)
-            else:
-                return credentials
+            return self.load_yaml(decrypted)
 
     def load_yaml(self, data):
         try:
             data = yaml.load(data)
+        except yaml.YAMLError, err:
+            # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
+            raise Exception(err.context, err.problem)
+        else:
             return data
-        except yaml.YAMLError:
-            raise
 
     def dump_schema(self):
         return yaml.dump(self.schema, default_flow_style=False)
