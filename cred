@@ -9,7 +9,7 @@ import yaml
 
 class Creds(object):
     def __init__(self, config="conf.yaml", verbose=False):
-        config = self.load_yaml(self.__read(config, "r"))
+        config = self.load_yaml(self.__open(config, "r"))
         
         # copy all the config keys into self
         for attr in config:
@@ -27,7 +27,7 @@ class Creds(object):
         
         self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
 
-    def __read(self, path, mode):
+    def __open(self, path, mode):
         try:
             stream = open(path, mode)
         except IOError, err:
@@ -40,7 +40,7 @@ class Creds(object):
 
     def get(self, cred):
         path = self.get_path(cred)
-        encrypted = self.__read(path, "rb")
+        encrypted = self.__open(path, "rb")
         if not self.use_agent:
             decrypted = str(self.gpg.decrypt_file(encrypted, passphrase=self.passphrase))
         else:
