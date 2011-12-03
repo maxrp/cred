@@ -30,7 +30,7 @@ class Creds(object):
     def __open(self, path, mode):
         try:
             stream = open(path, mode)
-        except IOError, err:
+        except IOError as err:
             raise Exception(err.strerror, err.filename)
         else:
             return stream        
@@ -93,7 +93,7 @@ class Creds(object):
     def load_yaml(self, data):
         try:
             data = yaml.load(data)
-        except yaml.YAMLError, err:
+        except yaml.YAMLError as err:
             # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
             raise Exception(err.context, err.problem)
         else:
@@ -123,7 +123,7 @@ def main():
             cred = creds.get(arg.name)
         elif arg.save_cred:
             cred = creds.save(arg.name)
-    except Exception, (errno, strerr):
+    except Exception as (errno, strerr):
         sys.stderr.write('%s: %s\n' % (errno, strerr))
         status = 1
     else:
