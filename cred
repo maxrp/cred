@@ -33,8 +33,47 @@ class Creds(object):
         except IOError, err:
             raise Exception(err.strerror, err.filename)
         else:
-            return stream
-    
+            return stream        
+
+    def save(self, cred):
+        path = self.get_path(cred)
+        
+        # TODO: implement a prompt system accommodating existing creds
+        # normally one would just want to try opening the file to avoid a race, but this is just to warn
+        if os.path.exists(path):
+            response = raw_input("WARNING: existing credentials in %s will be crushed! Continue? [y/n]" % path)
+            if response is not "y":
+                raise Exception("Credential exists", "the user does not wish to overwrite it.")
+
+        new_cred_file = self.__open(path, "wb")
+
+        print "Saving %s, prompting for details...\n" % cred
+        print "Type a lone . to quit and save."
+        
+        new_cred = []
+        
+        # for complex schemas this will fail
+        for key in self.schema:
+            prompt = "%s: " % key
+            entry = "%s: %s\n" % (key, raw_input(prompt))
+            new_cred.append(entry)
+        
+        # give the user a chance to improvise
+        entry = raw_input("")
+        
+        # additional chances for improvisation
+        while entry is not ".":
+            new_cred.append(entry + "\n")
+            entry = raw_input("")
+        
+        new_cred = "".join(new_cred)
+        if not self.use_agent:
+            encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients, passphrase=self.passphrase)
+        else:
+            encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients)
+        new_cred_file.write(str(encrypted_cred))
+        return self.load_yaml(new_cred)
+
     def get_path(self, cred):
         return self.passwords + cred + self.extension
 
@@ -73,17 +112,21 @@ def main():
         help='Dump the credential schema loaded from the configuration.')
     parser.add_argument('-l', dest='list_keys', action='store_true',
         help='List the keys in a credential.')
+    parser.add_argument('-s', '--save', dest='save_cred', action='store_true',
+        help='Save a credential, prompting for details overwriting any existing cred file.')
     parser.add_argument('name', default=False, nargs="?",
         help="The name of the credential to look up.")
     parser.add_argument('fields', default=False, nargs="*",
         help="The name of the field or fields to retrieve. If no fields are specified, all fields are returned.")
     
     arg = parser.parse_args()
-
+    
     try:
         creds = Creds()
-        if arg.name:
+        if arg.name and not arg.save_cred:
             cred = creds.get(arg.name)
+        elif arg.save_cred:
+            cred = creds.save(arg.name)
     except Exception, (errno, strerr):
         sys.stderr.write('%s: %s\n' % (errno, strerr))
         status = 1
