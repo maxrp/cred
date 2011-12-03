@@ -62,8 +62,13 @@ class Creds(object):
         except yaml.YAMLError:
             raise
 
+    def dump_schema(self):
+        print yaml.dump(self.schema, default_flow_style=False)
+
 def main():
     parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
+    parser.add_argument('-d', '--dump-schema', dest='dump_schema', action='store_true',
+        help='Dump the credential schema loaded from the configuration.')
     parser.add_argument('-l', dest='list_keys', action='store_true', help='List the keys in a credential.')
     parser.add_argument('name', default=False, nargs="?", help="The name of the credential to look up.")
     parser.add_argument('fields', default=False, nargs="*",
