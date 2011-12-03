@@ -4,11 +4,11 @@ Cred: a tool for querying GPG encrypted YAML format credentials
 A tool for storing passwords in a regular and readily manipulable encrypted format.
 
 Right now it's pretty good at:
-  - Retrieving the credentials for a domain
+- Retrieving the credentials for a domain
     - all at once or by attribute
     - listing attributes
-  - Writing new credentials for a domain
-  - Using gpg-agent
+- Writing new credentials for a domain
+- Using gpg-agent
 
 Requirements
 ------------
