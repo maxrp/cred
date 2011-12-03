@@ -20,13 +20,12 @@ class Creds(object):
         self.verbose = verbose
 
         # wanting to use an agent is cool, but if you don't have one...
-        if self.use_agent and self.agent:
-            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
-        else:
+        if not self.agent or not self.use_agent:
             # whether this is the setting or the fallback, it's definitely False henceforth
             self.use_agent = False
             self.passphrase = getpass.getpass()
-            self.gpg = gnupg.GPG(gnupghome=self.gpg_home, passphrase=self.passphrase, verbose=self.verbose)
+        
+        self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
 
     def __read(self, path, mode):
         try:
@@ -42,7 +41,10 @@ class Creds(object):
     def get(self, cred):
         path = self.get_path(cred)
         encrypted = self.__read(path, "rb")
-        decrypted = str(self.gpg.decrypt_file(encrypted))
+        if not self.use_agent:
+            decrypted = str(self.gpg.decrypt_file(encrypted, passphrase=self.passphrase))
+        else:
+            decrypted = str(self.gpg.decrypt_file(encrypted))
 
         if not decrypted:
             raise Exception("No Contents", "the file %s has no contents" % path)
