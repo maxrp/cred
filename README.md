@@ -27,8 +27,8 @@ Setup
 1. Ensure you have the materials listed above 
 1. Copy the example config to it's proper name:
         
-        cp conf.example.yaml conf.yaml 
-2. Edit conf.yaml to your liking (Tip: make sure default\_recipients is a list including at least "your name")
+        cp example.credconf.yaml ~/.credconf.yaml 
+2. Edit .credconf.yaml to your liking (Tip: make sure default\_recipients is a list including at least "your name")
 4. try it out!
         
         ./cred --help

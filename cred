@@ -8,7 +8,9 @@ import sys
 import yaml
 
 class Creds(object):
-    def __init__(self, config="conf.yaml", verbose=False):
+    def __init__(self, config=False, verbose=False):
+        if not config:
+            config = os.path.expanduser("~") + "/.credconf.yaml"
         config = self.load_yaml(self.__open(config, "r"))
         
         # copy all the config keys into self
@@ -106,6 +108,8 @@ class Creds(object):
 
 def main():
     parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
+    parser.add_argument('-c', '--config', dest='config', default=False,
+        help="An alternate configuration path. Default: ~/.credconf.yaml")
     parser.add_argument('-d', '--dump-schema', dest='dump_schema', action='store_true',
         help='Dump the credential schema loaded from the configuration.')
     parser.add_argument('-l', dest='list_keys', action='store_true',
@@ -120,7 +124,7 @@ def main():
     arg = parser.parse_args()
     
     try:
-        creds = Creds()
+        creds = Creds(config=arg.config)
         if arg.name and not arg.save_cred:
             cred = creds.get(arg.name)
         elif arg.save_cred:
