@@ -81,7 +81,7 @@ class Creds(object):
         return self.load_yaml(new_cred)
 
     def get_path(self, cred):
-        return self.passwords + cred + self.extension
+        return os.path.join(self.passwords, cred + self.extension)
 
     def get(self, cred):
         path = self.get_path(cred)
