@@ -12,7 +12,7 @@ class Creds(object):
         if not config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
         config = self.load_yaml(self.__open(config, "r"))
-        
+
         # copy all the config keys into self
         for attr in config:
             self.__dict__[attr] = config[attr]
@@ -26,7 +26,7 @@ class Creds(object):
             # whether this is the setting or the fallback, it's definitely False henceforth
             self.use_agent = False
             self.passphrase = getpass.getpass()
-        
+
         self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
 
     def __open(self, path, mode):
@@ -35,11 +35,11 @@ class Creds(object):
         except IOError as err:
             raise Exception(err.strerror, err.filename)
         else:
-            return stream        
+            return stream
 
     def save(self, cred):
         path = self.get_path(cred)
-        
+
         # TODO: implement a prompt system accommodating existing creds
         # normally one would just want to try opening the file to avoid a race, but this is just to warn
         if os.path.exists(path):
@@ -51,23 +51,23 @@ class Creds(object):
 
         print "Saving %s, prompting for details...\n" % cred
         print "Type a lone . to quit and save."
-        
+
         new_cred = []
-        
+
         # for complex schemas this will fail
         for key in self.schema:
             prompt = "%s: " % key
             entry = "%s: %s\n" % (key, raw_input(prompt))
             new_cred.append(entry)
-        
+
         # give the user a chance to improvise
         entry = raw_input("")
-        
+
         # additional chances for improvisation
         while entry is not ".":
             new_cred.append(entry + "\n")
             entry = raw_input("")
-        
+
         new_cred = "".join(new_cred)
         if not self.use_agent:
             encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients, passphrase=self.passphrase)
@@ -120,9 +120,9 @@ def main():
         help="The name of the credential to look up.")
     parser.add_argument('fields', default=False, nargs="*",
         help="The name of the field or fields to retrieve. If no fields are specified, all fields are returned.")
-    
+
     arg = parser.parse_args()
-    
+
     try:
         creds = Creds(config=arg.config)
         if arg.name and not arg.save_cred:
@@ -148,7 +148,7 @@ def main():
         elif arg.dump_schema:
             print creds.dump_schema()
         status = 0
-    
+
     return status
 
 if __name__ == "__main__":
