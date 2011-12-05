@@ -50,35 +50,34 @@ class Creds(object):
             if response is not "y":
                 raise Exception("Credential exists", "the user does not wish to overwrite it.")
 
-        new_cred_file = self.__open(path, "wb")
+        with self.__open(path, "wb") as new_cred_file:
+            print "Saving %s, prompting for details...\n" % cred
+            print "Type a lone . to quit and save."
 
-        print "Saving %s, prompting for details...\n" % cred
-        print "Type a lone . to quit and save."
+            new_cred = []
 
-        new_cred = []
+            # for complex schemas this will fail
+            for key in self.schema:
+                prompt = "%s: " % key
+                entry = "%s: %s\n" % (key, raw_input(prompt))
+                new_cred.append(entry)
 
-        # for complex schemas this will fail
-        for key in self.schema:
-            prompt = "%s: " % key
-            entry = "%s: %s\n" % (key, raw_input(prompt))
-            new_cred.append(entry)
-
-        # give the user a chance to improvise
-        entry = raw_input("")
-
-        # additional chances for improvisation
-        while entry is not ".":
-            new_cred.append(entry + "\n")
+            # give the user a chance to improvise
             entry = raw_input("")
 
-        new_cred = "".join(new_cred)
-        if not self.use_agent:
-            encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients, passphrase=self.passphrase)
-        else:
-            encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients)
-        new_cred_file.write(str(encrypted_cred))
-        new_cred_file.flush()
-        new_cred_file.close()
+            # additional chances for improvisation
+            while entry is not ".":
+                new_cred.append(entry + "\n")
+                entry = raw_input("")
+
+            new_cred = "".join(new_cred)
+            if not self.use_agent:
+                encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients, passphrase=self.passphrase)
+            else:
+                encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients)
+            new_cred_file.write(str(encrypted_cred))
+            new_cred_file.flush()
+
         return self.load_yaml(new_cred)
 
     def get_path(self, cred):
@@ -86,16 +85,16 @@ class Creds(object):
 
     def get(self, cred):
         path = self.get_path(cred)
-        encrypted = self.__open(path, "rb")
-        if not self.use_agent:
-            decrypted = str(self.gpg.decrypt_file(encrypted, passphrase=self.passphrase))
-        else:
-            decrypted = str(self.gpg.decrypt_file(encrypted))
+        with self.__open(path, "rb") as encrypted_file:
+            if not self.use_agent:
+                decrypted = self.gpg.decrypt_file(encrypted_file, passphrase=self.passphrase)
+            else:
+                decrypted = self.gpg.decrypt_file(encrypted_file)
 
         if not decrypted:
             raise Exception("No Contents", "the file %s has no contents" % path)
         else:
-            return self.load_yaml(decrypted)
+            return self.load_yaml(str(decrypted))
 
     def load_yaml(self, data):
         try:
