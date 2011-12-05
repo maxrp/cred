@@ -17,6 +17,9 @@ class Creds(object):
         for attr in config:
             self.__dict__[attr] = config[attr]
 
+        if not self.default_recipients:
+            raise Exception("No default recipients", "this tool only supports asymmetric encryption at present.")
+
         # check to see if there's actually an agent in the env
         self.agent = os.environ.get("GPG_AGENT_INFO", False)
         self.verbose = verbose
