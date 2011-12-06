@@ -28,7 +28,6 @@ class Creds(object):
         if not self.agent or not self.use_agent:
             # whether this is the setting or the fallback, it's definitely False henceforth
             self.use_agent = False
-            self.passphrase = getpass.getpass()
 
         self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
 
@@ -43,6 +42,8 @@ class Creds(object):
     def __cryptwrap(self, fn, cred, *args, **kwargs):
         method = getattr(self.gpg, fn)
         if not self.use_agent:
+            if not hasattr(self, "passphrase"):
+                self.passphrase = getpass.getpass()
             cred = method(cred, *args, passphrase=self.passphrase, **kwargs)
         else:
             cred = method(cred, *args, **kwargs)
