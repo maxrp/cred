@@ -39,6 +39,43 @@ class Creds(object):
             raise Exception(err.strerror, err.filename)
         else:
             return stream
+    
+    def __cryptwrap(self, fn, cred, *args, **kwargs):
+        method = getattr(self.gpg, fn)
+        if not self.use_agent:
+            cred = method(cred, *args, passphrase=self.passphrase, **kwargs)
+        else:
+            cred = method(cred, *args, **kwargs)
+
+        if cred.ok:
+            return cred
+        else:
+            """
+            I should eventually handle some of the recoverable cases.
+            Potential values of cred.status are:
+                'signature bad'
+                'signature good'
+                'signature valid'
+                'signature error'
+                'no public key'
+                'need symmetric passphrase'
+                'decryption incomplete'
+                'encryption incomplete'
+                'decryption ok'
+                'encryption ok'
+                'invalid recipient'
+                'key expired'
+                'sig created'
+                'sig expired'
+                'need passphrase'
+            """
+            raise Exception("%s failed" % fn, cred.status)
+            
+    def __decrypt(self, cred, *args, **kwargs):
+        return self.__cryptwrap('decrypt_file', cred, *args, **kwargs)
+
+    def __encrypt(self, cred, *args, **kwargs):
+        return self.__cryptwrap('encrypt', cred, *args, **kwargs)
 
     def save(self, cred):
         path = self.get_path(cred)
@@ -71,10 +108,7 @@ class Creds(object):
                 entry = raw_input("")
 
             new_cred = "".join(new_cred)
-            if not self.use_agent:
-                encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients, passphrase=self.passphrase)
-            else:
-                encrypted_cred = self.gpg.encrypt(new_cred, self.default_recipients)
+            encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
             new_cred_file.write(str(encrypted_cred))
             new_cred_file.flush()
 
@@ -82,19 +116,13 @@ class Creds(object):
 
     def get_path(self, cred):
         return os.path.join(self.passwords, cred + self.extension)
-
+    
     def get(self, cred):
         path = self.get_path(cred)
         with self.__open(path, "rb") as encrypted_file:
-            if not self.use_agent:
-                decrypted = self.gpg.decrypt_file(encrypted_file, passphrase=self.passphrase)
-            else:
-                decrypted = self.gpg.decrypt_file(encrypted_file)
+            decrypted = self.__decrypt(encrypted_file)
 
-        if not decrypted:
-            raise Exception("No Contents", "the file %s has no contents" % path)
-        else:
-            return self.load_yaml(str(decrypted))
+        return self.load_yaml(str(decrypted))
 
     def load_yaml(self, data):
         try:
