@@ -32,8 +32,8 @@ Setup
 4. try it out!
         
         ./cred --help
-        ./cred --save example.net
-        ./cred example.net
+        ./cred add example.net
+        ./cred list example.net
 
 Tips
 ----
