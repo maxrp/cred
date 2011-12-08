@@ -125,6 +125,9 @@ class Creds(object):
 
         return self.load_yaml(str(decrypted))
 
+    def list_credentials(self):
+       return [cred.replace(self.extension, "") for cred in os.listdir(self.passwords)]
+
     def load_yaml(self, data):
         try:
             data = yaml.load(data)
@@ -146,15 +149,19 @@ def add_cred(args):
 
 def list_cred(args):
     creds = cred_setup(args)
-    cred = creds.get(args.name)
-    if args.name and args.fields:
-        for field in args.fields:
-            print cred.get(field)
-    elif args.name and args.list_keys:
-        for field in cred:
-            print field
+    if args.name:
+        cred = creds.get(args.name)
+        if args.fields:
+            for field in args.fields:
+                print cred.get(field)
+        elif args.list_keys:
+            for field in cred:
+                print field
+        else:
+            print yaml.dump(cred, default_flow_style=False)
     else:
-        print yaml.dump(cred, default_flow_style=False)
+        for cred in creds.list_credentials():
+            print cred
     return 0
 
 def cred_schema(args):
@@ -182,7 +189,7 @@ def main():
 
     list_parser = subparsers.add_parser('list', help='List credential contents or credential keys.')
     list_parser.add_argument('-k', '--keys', dest='list_keys', action='store_true', help='List only the keys in a credential.')
-    list_parser.add_argument('name', nargs="?",
+    list_parser.add_argument('name', nargs="?", default=False,
         help="The name of the credential to list contents of. If no name is specified, lists all credentials.")
     list_parser.add_argument('fields', default=False, nargs="*",
         help="The name of the field or fields to retrieve. If no fields are specified, all fields are returned.")
@@ -192,7 +199,7 @@ def main():
     schema_parser.set_defaults(func=cred_schema)
 
     args = parser.parse_args()
-    
+
     try:
         return args.func(args)
     except Exception as (errno, strerr):
