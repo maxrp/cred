@@ -92,14 +92,18 @@ class Creds(object):
 
     def check_config(self, config):
         required_keys = [
+                            "credentials",
+                            "default_recipients",
+                            "extension",
+                            "gpg_home",
                             "schema",
                             "use_agent",
-                            "gpg_home",
-                            "credentials",
-                            "extension",
-                            "default_recipients",
                         ]
-        if config.keys() != required_keys:
+        config_keys = config.keys()
+        config_keys.sort()
+        if config_keys != required_keys:
+            print config_keys
+            print required_keys
             from sets import Set
             missing_set = Set(required_keys) - Set(config.keys())
             for key in missing_set:
