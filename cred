@@ -11,11 +11,11 @@ class Creds(object):
     def __init__(self, config=False, verbose=False):
         if not config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
-        config = self.load_yaml(self.__open(config, "r"))
+        config_keys = self.load_yaml(self.__open(config, "r"))
 
         # copy all the config keys into self
-        for attr in config:
-            self.__dict__[attr] = config[attr]
+        for key in config_keys:
+            self.__dict__[key] = config_keys[key]
 
         if not self.default_recipients:
             raise Exception("No default recipients", "this tool only supports asymmetric encryption at present.")
