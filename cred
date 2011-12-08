@@ -154,8 +154,7 @@ def list_cred(args):
         for field in cred:
             print field
     else:
-        for field in cred:
-            print "%s: %s" % (field, cred[field])
+        print yaml.dump(cred, default_flow_style=False)
     return 0
 
 def cred_schema(args):
