@@ -170,6 +170,12 @@ class Creds(object):
     def dump_schema(self):
         return yaml.dump(self.schema, default_flow_style=False)
 
+class CredsArgParser(argparse.ArgumentParser):
+    def error(self, message):
+        sys.stderr.write('error: %s\n' % message)
+        self.print_help()
+        sys.exit(2)
+
 def add_cred(args):
     creds = cred_setup(args)
     new_cred = yaml.dump(creds.save(args.name), default_flow_style=False)
@@ -206,7 +212,7 @@ def cred_setup(args):
         return Creds()
 
 def main():
-    parser = argparse.ArgumentParser(description="Query passwords from GPG encrypted files.")
+    parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
 
     parser.add_argument('-c', '--config', dest='config', default=False,
         help="An alternate configuration path. Default: ~/.credconf.yaml")
