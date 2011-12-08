@@ -113,7 +113,7 @@ class Creds(object):
             new_cred_file.write(str(encrypted_cred))
             new_cred_file.flush()
 
-        return self.load_yaml(new_cred)
+        return self.get(cred)
 
     def get_path(self, cred):
         return os.path.join(self.passwords, cred + self.extension)
@@ -139,7 +139,9 @@ class Creds(object):
 
 def add_cred(args):
     creds = cred_setup(args)
-    creds.save(args.name)
+    new_cred = yaml.dump(creds.save(args.name), default_flow_style=False)
+    print "\n\nSaved cred is..."
+    print new_cred
     return 0
 
 def list_cred(args):
