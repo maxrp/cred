@@ -33,7 +33,10 @@ Setup
         
         ./cred --help
         ./cred add example.net
-        ./cred list example.net
+        ./cred get
+        ./cred get --keys example.net
+        ./cred get example.net password
+
 
 Tips
 ----
