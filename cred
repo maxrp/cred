@@ -3,7 +3,7 @@
 import argparse
 import gnupg
 import getpass
-import os
+import os, errno
 import sys
 import yaml
 
@@ -16,6 +16,16 @@ class Creds(object):
         # copy all the config keys into self
         for key in config_keys:
             self.__dict__[key] = config_keys[key]
+        
+        # checking the veracity of the config
+        # does the passwords, dir exist? do we have perms?
+        try:
+            os.makedirs(self.passwords, 0700)
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+        else:
+            sys.stderr.write("Creating the nonexistant %s as per %s.\n" % (self.passwords, config))
 
         if not self.default_recipients:
             raise Exception("No default recipients", "this tool only supports asymmetric encryption at present.")
