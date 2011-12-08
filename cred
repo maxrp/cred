@@ -20,13 +20,7 @@ class Creds(object):
  
         # checking the veracity of the config
         # does the passwords, dir exist? do we have perms?
-        try:
-            os.makedirs(self.credentials, 0700)
-        except OSError as err:
-            if err.errno != errno.EEXIST:
-                raise
-        else:
-            sys.stderr.write("Creating the nonexistant %s as per %s.\n" % (self.credentials, config))
+        self.__ensure_path(self.credentials)
 
         if not self.default_recipients:
             raise Exception("No default recipients", "this tool only supports asymmetric encryption at present.")
@@ -50,6 +44,18 @@ class Creds(object):
         else:
             return stream
     
+    def __ensure_path(self, path):
+        # strip any file names from the path
+        path = os.path.dirname(path)
+        try:
+            os.makedirs(path, 0700)
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+        else:
+            sys.stderr.write("Creating the nonexistant %s.\n" % path)
+        
+
     def __cryptwrap(self, fn, cred, *args, **kwargs):
         method = getattr(self.gpg, fn)
         if not self.use_agent:
@@ -145,7 +151,9 @@ class Creds(object):
         return self.get(cred)
 
     def get_path(self, cred):
-        return os.path.join(self.credentials, cred + self.extension)
+        path = os.path.join(self.credentials, cred + self.extension)
+        self.__ensure_path(path)
+        return path
     
     def get(self, cred):
         path = self.get_path(cred)
