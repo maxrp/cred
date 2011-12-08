@@ -12,6 +12,8 @@ class Creds(object):
         if not config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
         config_keys = self.load_yaml(self.__open(config, "r"))
+        
+        self.check_config(config_keys)
 
         # copy all the config keys into self
         for key in config_keys:
@@ -87,6 +89,22 @@ class Creds(object):
 
     def __encrypt(self, cred, *args, **kwargs):
         return self.__cryptwrap('encrypt', cred, *args, **kwargs)
+
+    def check_config(self, config):
+        required_keys = [
+                            "schema",
+                            "use_agent",
+                            "gpg_home",
+                            "credentials",
+                            "extension",
+                            "default_recipients",
+                        ]
+        if config.keys() != required_keys:
+            from sets import Set
+            missing_set = Set(required_keys) - Set(config.keys())
+            for key in missing_set:
+                sys.stderr.write("Missing config key: %s\n" % key)
+            raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
     def save(self, cred):
         path = self.get_path(cred)
