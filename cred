@@ -16,16 +16,16 @@ class Creds(object):
         # copy all the config keys into self
         for key in config_keys:
             self.__dict__[key] = config_keys[key]
-        
+ 
         # checking the veracity of the config
         # does the passwords, dir exist? do we have perms?
         try:
-            os.makedirs(self.passwords, 0700)
+            os.makedirs(self.credentials, 0700)
         except OSError as err:
             if err.errno != errno.EEXIST:
                 raise
         else:
-            sys.stderr.write("Creating the nonexistant %s as per %s.\n" % (self.passwords, config))
+            sys.stderr.write("Creating the nonexistant %s as per %s.\n" % (self.credentials, config))
 
         if not self.default_recipients:
             raise Exception("No default recipients", "this tool only supports asymmetric encryption at present.")
@@ -126,7 +126,7 @@ class Creds(object):
         return self.get(cred)
 
     def get_path(self, cred):
-        return os.path.join(self.passwords, cred + self.extension)
+        return os.path.join(self.credentials, cred + self.extension)
     
     def get(self, cred):
         path = self.get_path(cred)
@@ -136,7 +136,7 @@ class Creds(object):
         return self.load_yaml(str(decrypted))
 
     def list_credentials(self):
-       return [cred.replace(self.extension, "") for cred in os.listdir(self.passwords)]
+       return [cred.replace(self.extension, "") for cred in os.listdir(self.credentials)]
 
     def load_yaml(self, data):
         try:
@@ -210,6 +210,7 @@ def main():
 
     args = parser.parse_args()
 
+    return args.func(args)
     try:
         return args.func(args)
     except Exception as (errno, strerr):

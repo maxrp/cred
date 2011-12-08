@@ -6,6 +6,6 @@ schema:
 
 use_agent: True
 gpg_home: "/home/user/.gnupg"
-passwords: "/home/user/.gnupg/creds/"
+credentials: "/home/user/.gnupg/creds/"
 extension: ".yaml.gpg"
 default_recipients: []
