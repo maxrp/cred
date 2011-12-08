@@ -102,8 +102,6 @@ class Creds(object):
         config_keys = config.keys()
         config_keys.sort()
         if config_keys != required_keys:
-            print config_keys
-            print required_keys
             from sets import Set
             missing_set = Set(required_keys) - Set(config.keys())
             for key in missing_set:
