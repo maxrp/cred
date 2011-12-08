@@ -147,7 +147,7 @@ def add_cred(args):
     print new_cred
     return 0
 
-def list_cred(args):
+def get_cred(args):
     creds = cred_setup(args)
     if args.name:
         cred = creds.get(args.name)
@@ -187,13 +187,13 @@ def main():
     add_parser.add_argument('name', nargs="?", help="The name of the credential to add, i.e. example.com")
     add_parser.set_defaults(func=add_cred)
 
-    list_parser = subparsers.add_parser('list', help='List credential contents or credential keys.')
-    list_parser.add_argument('-k', '--keys', dest='list_keys', action='store_true', help='List only the keys in a credential.')
-    list_parser.add_argument('name', nargs="?", default=False,
-        help="The name of the credential to list contents of. If no name is specified, lists all credentials.")
-    list_parser.add_argument('fields', default=False, nargs="*",
-        help="The name of the field or fields to retrieve. If no fields are specified, all fields are returned.")
-    list_parser.set_defaults(func=list_cred)
+    get_parser = subparsers.add_parser('get', help='Get credential contents or credential keys.')
+    get_parser.add_argument('-k', '--keys', dest='list_keys', action='store_true', help='List only the keys in a credential.')
+    get_parser.add_argument('name', nargs="?", default=False,
+        help="The name of the credential to get contents of. If no name is specified, lists all credentials.")
+    get_parser.add_argument('fields', default=False, nargs="*",
+        help="The name of the field or fields to get. If no fields are specified, all fields are returned.")
+    get_parser.set_defaults(func=get_cred)
 
     schema_parser = subparsers.add_parser('schema', help="Dump the schema from the loaded config.")
     schema_parser.set_defaults(func=cred_schema)
