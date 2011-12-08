@@ -3,6 +3,7 @@
 import argparse
 import gnupg
 import getpass
+import glob
 import os, errno
 import sys
 import yaml
@@ -162,8 +163,15 @@ class Creds(object):
 
         return self.load_yaml(str(decrypted))
 
-    def list_credentials(self):
-       return [cred.replace(self.extension, "") for cred in os.listdir(self.credentials)]
+    def list_credentials(self, namespace=False):
+        if namespace:
+            list_path = os.path.join(self.credentials, namespace, "*"+self.extension)
+        else:
+            list_path = os.path.join(self.credentials, "*"+self.extension)
+        return [cred.replace(self.extension, "") for cred in glob.glob(list_path)]
+
+    def list_namespaces(self):
+        return [namespace for namespace in os.listdir(self.credentials) if os.path.isdir(os.path.join(self.credentials, namespace))]
 
     def load_yaml(self, data):
         try:
@@ -203,8 +211,13 @@ def get_cred(args):
         else:
             print yaml.dump(cred, default_flow_style=False)
     else:
-        for cred in creds.list_credentials():
-            print cred
+        cred_list = creds.list_credentials()
+        for namespace in creds.list_namespaces():
+            sub_creds = [os.path.join(namespace, cred) for cred in creds.list_credentials(namespace)]
+            cred_list.extend(sub_creds)
+        for cred in cred_list:
+            # relpath because relpath is how you'll refer to them
+            print os.path.relpath(cred, creds.credentials)
     return 0
 
 def cred_schema(args):
