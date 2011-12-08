@@ -22,7 +22,6 @@ Requirements
 - [gnupg.vim][4] (pretty much vital for anyone dealing with gpg encrypted text files)
 - Python 2.7
 - Credentials for some stuff you want to encrypt with your gpg private key to a list of N recipients
-  - I'm pretty sure this tool could be coerced to work with GnuPG in symmetric mode, but I haven't tried
 
 Setup
 -----
