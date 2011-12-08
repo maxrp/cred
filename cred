@@ -56,9 +56,9 @@ class Creds(object):
         if not self.use_agent:
             if not hasattr(self, "passphrase"):
                 self.passphrase = getpass.getpass()
-            cred = method(cred, *args, passphrase=self.passphrase, **kwargs)
-        else:
-            cred = method(cred, *args, **kwargs)
+            kwargs['passphrase'] = self.passphrase 
+
+        cred = method(cred, *args, **kwargs)
 
         if cred.ok:
             return cred
