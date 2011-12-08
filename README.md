@@ -9,6 +9,8 @@ Right now it's pretty good at:
   - all at once or by attribute
   - listing attributes
 - Writing new credentials for a domain
+- Using directories to namespace credentials under the configured credential path
+- Listing credentials
 - Using gpg-agent
 
 Requirements
@@ -33,9 +35,10 @@ Setup
         
         ./cred --help
         ./cred add example.net
-        ./cred get
         ./cred get --keys example.net
         ./cred get example.net password
+        ./cred add alter-ego/example.net
+        ./cred get
 
 
 Tips
