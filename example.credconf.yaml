@@ -9,3 +9,5 @@ gpg_home: "/home/user/.gnupg"
 credentials: "/home/user/.gnupg/creds/"
 extension: ".yaml.gpg"
 default_recipients: []
+default_key: "UID for your key"
+sign: True

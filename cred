@@ -13,18 +13,18 @@ class Creds(object):
         if not config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
         config_keys = self.load_yaml(self.__open(config, "r"))
-        
+ 
         self.check_config(config_keys)
 
+        # ensure the encrypting user is always in the recipient list
+        config_keys['default_recipients'].append(config_keys['default_key'])
+        
         # copy all the config keys into self
         self.__dict__.update(config_keys)
  
         # checking the veracity of the config
         # does the passwords, dir exist? do we have perms?
         self.__ensure_path(self.credentials)
-
-        if not self.default_recipients:
-            raise Exception("No default recipients", "this tool only supports asymmetric encryption at present.")
 
         # check to see if there's actually an agent in the env
         self.agent = os.environ.get("GPG_AGENT_INFO", False)
@@ -91,18 +91,23 @@ class Creds(object):
             raise Exception("%s failed" % fn, cred.status)
             
     def __decrypt(self, cred, *args, **kwargs):
+        # TODO: implement signature verification
         return self.__cryptwrap('decrypt_file', cred, *args, **kwargs)
 
     def __encrypt(self, cred, *args, **kwargs):
+        if self.sign:
+            kwargs['sign'] = self.default_key
         return self.__cryptwrap('encrypt', cred, *args, **kwargs)
 
     def check_config(self, config):
         required_keys = [
                             "credentials",
+                            "default_key",
                             "default_recipients",
                             "extension",
                             "gpg_home",
                             "schema",
+                            "sign",
                             "use_agent",
                         ]
         config_keys = config.keys()

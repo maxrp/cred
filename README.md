@@ -29,7 +29,11 @@ Setup
 1. Copy the example config to it's proper name:
         
         cp example.credconf.yaml ~/.credconf.yaml 
-2. Edit .credconf.yaml to your liking (Tip: make sure default\_recipients is a list including at least "your name")
+2. Edit .credconf.yaml. Namely:
+    - Set "gpg\_home" to the right value
+    - Set "credentials" to the place you would like to store these credentials. If the directory does not exist, it will be created.
+    - Set "default\_key" to the UID of key you want to sign with, i.e. "Bob" or "Bob Dobbs" or "Bob Dobbs <bob@dobbs.com>"
+    - Add UIDs of trusted keys to defaul\_recipients, if you like (the default\_key will be appended to this list automatically)
 4. try it out!
         
         ./cred --help
