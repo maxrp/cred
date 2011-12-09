@@ -18,6 +18,8 @@ class Creds(object):
 
         # ensure the encrypting user is always in the recipient list
         config_keys['default_recipients'].append(config_keys['default_key'])
+        # ensure credentials is an absolute path
+        config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
         
         # copy all the config keys into self
         self.__dict__.update(config_keys)
@@ -46,6 +48,12 @@ class Creds(object):
             return stream
     
     def __ensure_path(self, path):
+        requested_path = os.path.abspath(path)
+        prefix = os.path.commonprefix([requested_path, self.credentials])
+        # constrain the whole operation to subpaths of the configured credential directory
+        if prefix != self.credentials:
+            message = 'the requested path: \n\t %s\nis outside the configured credential directory:\n\t%s' % (requested_path, self.credentials)
+            raise Exception('Path error', message)
         try:
             os.makedirs(path, 0700)
         except OSError as err:
