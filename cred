@@ -47,6 +47,7 @@ class Creds(object):
     
     def __ensure_path(self, path):
         # strip any file names from the path
+        path = os.path.dirname(path)
         try:
             os.makedirs(path, 0700)
         except OSError as err:
@@ -157,6 +158,7 @@ class Creds(object):
 
     def get_path(self, cred):
         path = os.path.join(self.credentials, cred + self.extension)
+        self.__ensure_path(path)
         return path
     
     def get(self, cred):
