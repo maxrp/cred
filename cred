@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+__author__ = "Max Parmer <maxp@pdx.edu>"
+__copyright__ = "Copyright 2011"
+__credits__ = [
+                "Max Parmer",
+                "Elliot Schlegelmilch",
+              ]
+__license__ = "GPL"
+__maintainer__ = "Max Parmer"
+__email__ = "maxp@pdx.edu"
+__status__ = "Development"
+
 import argparse
 import gnupg
 import getpass
