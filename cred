@@ -10,6 +10,9 @@ import yaml
 
 class Creds(object):
     def __init__(self, config=False, verbose=False):
+        # force a sane default umask
+        os.umask(0077)
+
         if not config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
         config_keys = self.load_yaml(self.__open(config, "r"))
@@ -20,7 +23,7 @@ class Creds(object):
         config_keys['default_recipients'].append(config_keys['default_key'])
         # ensure credentials is an absolute path
         config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
-        
+ 
         # copy all the config keys into self
         self.__dict__.update(config_keys)
  
@@ -55,7 +58,7 @@ class Creds(object):
             message = 'the requested path: \n\t %s\nis outside the configured credential directory:\n\t%s' % (requested_path, self.credentials)
             raise Exception('Path error', message)
         try:
-            os.makedirs(path, 0700)
+            os.makedirs(path)
         except OSError as err:
             if err.errno != errno.EEXIST:
                 raise
