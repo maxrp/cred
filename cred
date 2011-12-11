@@ -19,6 +19,8 @@ import os, errno
 import sys
 import yaml
 
+from sets import Set
+
 class Creds(object):
     def __init__(self, config=False, verbose=False):
         # force a sane default umask
@@ -133,7 +135,6 @@ class Creds(object):
         config_keys = config.keys()
         config_keys.sort()
         if config_keys != required_keys:
-            from sets import Set
             missing_set = Set(required_keys) - Set(config.keys())
             for key in missing_set:
                 sys.stderr.write("Missing config key: %s\n" % key)
