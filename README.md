@@ -34,7 +34,7 @@ Setup
     - Set "credentials" to the place you would like to store these credentials. If the directory does not exist, it will be created.
     - Set "default\_key" to the UID of key you want to sign with, i.e. "Bob" or "Bob Dobbs" or "Bob Dobbs \<bob@dobbs.com\>"
     - Add UIDs of trusted keys to defaul\_recipients, if you like (the default\_key will be appended to this list automatically)
-4. try it out!
+4. Try it out!
         
         ./cred --help
         ./cred add example.net
@@ -42,7 +42,8 @@ Setup
         ./cred get example.net password
         ./cred add alter-ego/example.net
         ./cred get
-
+5. Copy the cred script to `~/.local/bin` or wherever you like to keep local scripts (there'll be an installer someday).
+6. `cat bash_completion.sh >> .bashrc` or whatever; for local completions I have a ~/.bash\_completions which is sourced in my .bashrc and it's not an awful way to deal with personal completion preferences.
 
 Tips
 ----
