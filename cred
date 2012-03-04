@@ -26,6 +26,8 @@ class Creds(object):
         # force a sane default umask
         os.umask(0077)
 
+        self.verbose = verbose
+        
         if not config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
         config_keys = self.load_yaml(self.__open(config, "r"))
@@ -46,7 +48,6 @@ class Creds(object):
 
         # check to see if there's actually an agent in the env
         self.agent = os.environ.get("GPG_AGENT_INFO", False)
-        self.verbose = verbose
 
         # wanting to use an agent is cool, but if you don't have one...
         if not self.agent or not self.use_agent:
@@ -255,13 +256,18 @@ def cred_schema(args):
     return 0
 
 def cred_setup(args):
-    return Creds(config=args.config)
+    return Creds(
+        config=args.config,
+        verbose=args.verbose,
+        )
 
 def main():
     parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
 
     parser.add_argument('-c', '--config', dest='config', default=False,
         help="An alternate configuration path. Default: ~/.credconf.yaml")
+    parser.add_argument('-v', '--verbose', dest='verbose', default=False,
+        action='store_true', help="Verbose")
 
     subparsers = parser.add_subparsers(help='Verbs for cred manipulation.')
 
