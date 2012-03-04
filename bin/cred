@@ -128,7 +128,7 @@ class Creds(object):
 
     def __v(self, message):
         if self.verbose:
-            sys.stderr.write("[CRED] %s\n" % message)
+            sys.stderr.write('\033[93m [CRED] \033[0m %s\n' % message)
 
     def check_config(self, config):
         required_keys = [
