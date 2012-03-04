@@ -58,6 +58,7 @@ class Creds(object):
 
     def __open(self, path, mode):
         try:
+            self.__v("Opening: %s, %s" % (path, mode))
             stream = open(path, mode)
         except IOError as err:
             raise Exception(err.strerror, err.filename)
@@ -81,9 +82,12 @@ class Creds(object):
         
 
     def __cryptwrap(self, fn, cred, *args, **kwargs):
+        # clone the method from the gpg class
+        self.__v("Trying method: %s on: %s" % (fn, cred))
         method = getattr(self.gpg, fn)
         if not self.use_agent:
             if not hasattr(self, "passphrase"):
+                self.__v("Prompting for password.")
                 self.passphrase = getpass.getpass()
             kwargs['passphrase'] = self.passphrase 
 
@@ -121,6 +125,10 @@ class Creds(object):
         if self.sign:
             kwargs['sign'] = self.default_key
         return self.__cryptwrap('encrypt', cred, *args, **kwargs)
+
+    def __v(self, message):
+        if self.verbose:
+            sys.stderr.write("[CRED] %s\n" % message)
 
     def check_config(self, config):
         required_keys = [
