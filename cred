@@ -255,10 +255,7 @@ def cred_schema(args):
     return 0
 
 def cred_setup(args):
-    if hasattr(args, 'config'):
-        return Creds(config=args.config)
-    else:
-        return Creds()
+    return Creds(config=args.config)
 
 def main():
     parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
