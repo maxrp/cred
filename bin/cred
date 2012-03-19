@@ -149,6 +149,36 @@ class Creds(object):
                 sys.stderr.write("Missing config key: %s\n" % key)
             raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
+    def mod(self, cred):
+        path = self.get_path(cred)
+        orig_cred = self.get(cred)
+        orig_cred_keys = orig_cred.keys()
+        prompt_defaults = ", ".join(orig_cred_keys)
+
+        response = self.__prompt("Modify", prompt_defaults)
+        mod_keys = response.split(",")
+
+        # aggregate new and modified keys
+        new_cred = []
+        for key in mod_keys:
+            key = key.strip()
+            value = orig_cred.get(key, False)
+            new_val = self.__prompt(key, value)
+            new_cred.append("%s: %s\n" % (key, new_val))
+
+        # copy unchanged keys from the orig_cred
+        for key in orig_cred_keys:
+            if key not in mod_keys:
+                new_cred.append("%s: %s\n" % (key, orig_cred[key]))
+        
+        with self.__open(path, "wb") as new_cred_file:
+            new_cred = "".join(new_cred)
+            encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
+            new_cred_file.write(str(encrypted_cred))
+            new_cred_file.flush()
+
+        return self.get(cred)
+
     def __prompt(self, query, default=False):
         prompt = "%s: " % query
         if default:
@@ -270,6 +300,10 @@ def get_cred(args):
             print os.path.relpath(cred, creds.credentials)
     return 0
 
+def mod_cred(args):
+    creds = cred_setup(args)
+    return creds.mod(args.name)
+
 def cred_schema(args):
     creds = cred_setup(args)
     print creds.dump_schema()
@@ -302,6 +336,10 @@ def main():
     get_parser.add_argument('fields', default=False, nargs="*",
         help="The name of the field or fields to get. If no fields are specified, all fields are returned.")
     get_parser.set_defaults(func=get_cred)
+
+    mod_parser = subparsers.add_parser('mod', help='Modify an existing credential.')
+    mod_parser.add_argument('name', nargs='?', help="The name of the credential to modify.")
+    mod_parser.set_defaults(func=mod_cred)
 
     schema_parser = subparsers.add_parser('schema', help="Dump the schema from the loaded config.")
     schema_parser.set_defaults(func=cred_schema)
