@@ -1,14 +1,14 @@
-Cred: a tool for querying GPG encrypted YAML format credentials
-===============================================================
+Cred: a tool for querying GPG encrypted YAML credentials
+=========================================================
 
 A tool for storing passwords in a regular and readily manipulable encrypted format.
 
-Right now it's pretty good at:
+This tool will:
 
-- Retrieving the credentials for a domain
-  - all at once or by attribute
-  - listing attributes
-- Writing new credentials for a domain
+- Retrieve credentials for a domain
+  - all at once or by attribute like "username" or "password"
+  - listing attributes of credentials for a domain
+- Add new credentials and modify existing credentials for a domain
 - Using directories to namespace credentials under the configured credential path
 - Listing credentials
 - Using gpg-agent
@@ -18,22 +18,29 @@ Requirements
 - [python-gnupg][1]
 - [PyYAML][2]
 - [GnuPG][3]
-  - A GPG private key and some good sense
-- [gnupg.vim][4] (pretty much vital for anyone dealing with gpg encrypted text files)
+  - A GPG key and some good sense
 - Python 2.7
-- Credentials for some stuff you want to encrypt with your gpg private key to a list of N recipients
+
+Recommended
+-----------
+- Credentials for some stuff you want to encrypt with your gpg public key and possibly the public keys of some associates.
+- [gnupg.vim][4] A nice vim plugin for creating and modifying gpg encrypted text files.
 
 Setup
 -----
 1. Ensure you have the materials listed above 
 1. Copy the example config to it's proper name:
         
-        cp example.credconf.yaml ~/.credconf.yaml 
-2. Edit .credconf.yaml. Namely:
+        cp ./examples/credconf.yaml ~/.credconf.yaml 
+2. Edit ~/.credconf.yaml. Namely:
     - Set "gpg\_home" to the right value
     - Set "credentials" to the place you would like to store these credentials. If the directory does not exist, it will be created.
     - Set "default\_key" to the UID of key you want to sign with, i.e. "Bob" or "Bob Dobbs" or "Bob Dobbs \<bob@dobbs.com\>"
     - Add UIDs of trusted keys to defaul\_recipients, if you like (the default\_key will be appended to this list automatically)
+3. Install the script:
+        
+        python setup.py install --user
+4. Make sure you have ~/.local/bin (or whatever you use) in your path.
 4. Try it out!
         
         ./cred --help
@@ -41,9 +48,9 @@ Setup
         ./cred get --keys example.net
         ./cred get example.net password
         ./cred add alter-ego/example.net
+        ./cred modify alter-ego/example.net
         ./cred get
-5. Copy the cred script to `~/.local/bin` or wherever you like to keep local scripts (there'll be an installer someday).
-6. `cat bash_completion.sh >> .bashrc` or whatever; for local completions I have a ~/.bash\_completions which is sourced in my .bashrc and it's not an awful way to deal with personal completion preferences.
+6. `cat lib/bash_completion.sh >> .bashrc` or whatever; for local completions I have a ~/.bash\_completions which is sourced in my .bashrc and it's not an awful way to deal with personal completion preferences.
 
 Tips
 ----

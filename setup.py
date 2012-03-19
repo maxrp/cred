@@ -12,7 +12,7 @@ kwds['long_description'] = f.read()
 f.close()
 
 setup(name='cred',
-    version='0.9',
+    version='0.9.0.1',
     description='GnuPG frontend for storing credentials in YAML',
     author='Max R.D. Parmer',
     license="GPL",
