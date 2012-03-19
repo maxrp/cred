@@ -137,7 +137,6 @@ class Creds(object):
                             "default_recipients",
                             "extension",
                             "gpg_home",
-                            "schema",
                             "sign",
                             "use_agent",
                         ]
@@ -248,9 +247,6 @@ class Creds(object):
         else:
             return data
 
-    def dump_schema(self):
-        return yaml.dump(self.schema, default_flow_style=False)
-
 class CredsArgParser(argparse.ArgumentParser):
     def error(self, message):
         sys.stderr.write('error: %s\n' % message)
@@ -293,11 +289,6 @@ def mod_cred(args):
     print changed_cred
     return 0
 
-def cred_schema(args):
-    creds = cred_setup(args)
-    print creds.dump_schema()
-    return 0
-
 def cred_setup(args):
     return Creds(
         config=args.config,
@@ -329,9 +320,6 @@ def main():
     mod_parser = subparsers.add_parser('modify', help='Modify an existing credential.')
     mod_parser.add_argument('name', nargs='?', help="The name of the credential to modify.")
     mod_parser.set_defaults(func=mod_cred)
-
-    schema_parser = subparsers.add_parser('schema', help="Dump the schema from the loaded config.")
-    schema_parser.set_defaults(func=cred_schema)
 
     args = parser.parse_args()
 
