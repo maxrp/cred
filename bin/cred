@@ -149,6 +149,18 @@ class Creds(object):
                 sys.stderr.write("Missing config key: %s\n" % key)
             raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
+    def __prompt(self, query, default=False):
+        prompt = "%s: " % query
+        if default:
+            prompt += "[%s] " % default
+        response = raw_input(prompt)
+        if not response:
+            self.__v("asked for %s got %s" % (query, default))
+            return default
+        else:
+            self.__v("asked for %s got %s" % (query, response))
+            return response
+
     def save(self, cred):
         path = self.get_path(cred)
 
