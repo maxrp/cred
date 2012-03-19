@@ -1,9 +1,4 @@
 ---
-schema:
-    username: None
-    password: None
-    uri: None
-
 use_agent: True
 gpg_home: "/home/user/.gnupg"
 credentials: "/home/user/.gnupg/creds/"
