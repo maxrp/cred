@@ -326,7 +326,7 @@ def main():
         help="The name of the field or fields to get. If no fields are specified, all fields are returned.")
     get_parser.set_defaults(func=get_cred)
 
-    mod_parser = subparsers.add_parser('mod', help='Modify an existing credential.')
+    mod_parser = subparsers.add_parser('modify', help='Modify an existing credential.')
     mod_parser.add_argument('name', nargs='?', help="The name of the credential to modify.")
     mod_parser.set_defaults(func=mod_cred)
 
