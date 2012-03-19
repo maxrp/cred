@@ -6,7 +6,7 @@ _cred()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     # Cred's verbs
-    opts="add get schema"
+    opts="add get modify schema"
 
     # generate the appropriate completions, right now just for `cred get`
     case "${prev}" in
