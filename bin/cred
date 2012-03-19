@@ -169,7 +169,7 @@ class Creds(object):
             if key not in mod_keys:
                 new_cred.append("%s: %s" % (key, orig_cred[key]))
         
-        return self.write_cred(cred, new_cred)
+        return self.save(cred, new_cred)
 
     def __prompt(self, query, default=False):
         prompt = "%s: " % query
@@ -201,9 +201,9 @@ class Creds(object):
             new_val = self.__prompt(key)
             new_cred.append("%s: %s" % (key, new_val))
 
-        return self.write_cred(cred, new_cred)
+        return self.save(cred, new_cred)
 
-    def write_cred(self, cred, new_cred):
+    def save(self, cred, new_cred):
         path = self.get_path(cred)
         with self.__open(path, "wb") as new_cred_file:
             new_cred = "\n".join(new_cred)
