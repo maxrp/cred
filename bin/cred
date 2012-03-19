@@ -144,9 +144,14 @@ class Creds(object):
         config_keys.sort()
         if config_keys != required_keys:
             missing_set = Set(required_keys) - Set(config.keys())
+            excess_set = Set(config.keys()) - Set(required_keys)
             for key in missing_set:
                 sys.stderr.write("Missing config key: %s\n" % key)
-            raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
+            if excess_set:
+                for excess_parameter in excess_set:
+                    self.__v("Excess parameter in config: %s" % excess_parameter)
+            else:
+                raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
     def mod(self, cred):
         orig_cred = self.get(cred)
