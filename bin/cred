@@ -150,7 +150,6 @@ class Creds(object):
             raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
     def mod(self, cred):
-        path = self.get_path(cred)
         orig_cred = self.get(cred)
         orig_cred_keys = orig_cred.keys()
         prompt_defaults = ", ".join(orig_cred_keys)
@@ -164,20 +163,14 @@ class Creds(object):
             key = key.strip()
             value = orig_cred.get(key, False)
             new_val = self.__prompt(key, value)
-            new_cred.append("%s: %s\n" % (key, new_val))
+            new_cred.append("%s: %s" % (key, new_val))
 
         # copy unchanged keys from the orig_cred
         for key in orig_cred_keys:
             if key not in mod_keys:
-                new_cred.append("%s: %s\n" % (key, orig_cred[key]))
+                new_cred.append("%s: %s" % (key, orig_cred[key]))
         
-        with self.__open(path, "wb") as new_cred_file:
-            new_cred = "".join(new_cred)
-            encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
-            new_cred_file.write(str(encrypted_cred))
-            new_cred_file.flush()
-
-        return self.get(cred)
+        return self.write_cred(cred, new_cred)
 
     def __prompt(self, query, default=False):
         prompt = "%s: " % query
@@ -191,37 +184,30 @@ class Creds(object):
             self.__v("asked for %s got %s" % (query, response))
             return response
 
-    def save(self, cred):
+    def add(self, cred):
         path = self.get_path(cred)
 
-        # TODO: implement a prompt system accommodating existing creds
-        # normally one would just want to try opening the file to avoid a race, but this is just to warn
         if os.path.exists(path):
-            response = raw_input("WARNING: existing credentials in %s will be crushed! Continue? [y/n]" % path)
-            if response is not "y":
-                raise Exception("Credential exists", "the user does not wish to overwrite it.")
+            raise Exception("Credential exists", "try `cred mod %s`" % cred)
+        
+        prompt_defaults = ", ".join(['username', 'password'])
 
+        response = self.__prompt("Add which keys?", prompt_defaults)
+        new_keys = response.split(",")
+
+        # aggregate new and modified keys
+        new_cred = []
+        for key in new_keys:
+            key = key.strip()
+            new_val = self.__prompt(key)
+            new_cred.append("%s: %s" % (key, new_val))
+
+        return self.write_cred(cred, new_cred)
+
+    def write_cred(self, cred, new_cred):
+        path = self.get_path(cred)
         with self.__open(path, "wb") as new_cred_file:
-            print "Saving %s, prompting for details...\n" % cred
-            print "Type a lone . to quit and save."
-
-            new_cred = []
-
-            # for complex schemas this will fail
-            for key in self.schema:
-                prompt = "%s: " % key
-                entry = "%s: %s\n" % (key, raw_input(prompt))
-                new_cred.append(entry)
-
-            # give the user a chance to improvise
-            entry = raw_input("")
-
-            # additional chances for improvisation
-            while entry is not ".":
-                new_cred.append(entry + "\n")
-                entry = raw_input("")
-
-            new_cred = "".join(new_cred)
+            new_cred = "\n".join(new_cred)
             encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
             new_cred_file.write(str(encrypted_cred))
             new_cred_file.flush()
@@ -273,7 +259,7 @@ class CredsArgParser(argparse.ArgumentParser):
 
 def add_cred(args):
     creds = cred_setup(args)
-    new_cred = yaml.dump(creds.save(args.name), default_flow_style=False)
+    new_cred = yaml.dump(creds.add(args.name), default_flow_style=False)
     print "\n\nSaved cred is..."
     print new_cred
     return 0
@@ -302,7 +288,10 @@ def get_cred(args):
 
 def mod_cred(args):
     creds = cred_setup(args)
-    return creds.mod(args.name)
+    changed_cred = yaml.dump(creds.mod(args.name), default_flow_style=False)
+    print "\n\nChanged cred is..."
+    print changed_cred
+    return 0
 
 def cred_schema(args):
     creds = cred_setup(args)
