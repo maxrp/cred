@@ -2,3 +2,5 @@ conf.yaml
 *.asc*
 *.gpg*
 build
+cred.egg-info
+dist
