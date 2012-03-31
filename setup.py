@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os
-from distutils.core import setup
+from setuptools import setup
 
 kwds = {}
 
@@ -14,6 +14,7 @@ f.close()
 setup(name='cred',
     version='0.9.0.1',
     description='GnuPG frontend for storing credentials in YAML',
+    install_requires=['python-gnupg>=0.2.9'],
     author='Max R.D. Parmer',
     license="GPL",
     author_email='m@x-pl.us',
