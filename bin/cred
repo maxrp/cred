@@ -293,9 +293,6 @@ class CredsArgParser(argparse.ArgumentParser):
         self.print_help()
         sys.exit(2)
 
-def method(args):
-    print args
-
 class Main(CredCLI):
     def __init__(self):
         parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
