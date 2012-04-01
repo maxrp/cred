@@ -19,7 +19,24 @@ from sets import Set
 
 class CredCLI(object):
     def setup(self, args):
-        self.creds = Creds(args.config)
+
+        if not args.config:
+            config = os.path.expanduser("~") + "/.credconf.yaml"
+
+        with open(config, "r") as config:
+            config_keys = yaml.load(config)
+ 
+        self.check_config(config_keys)
+
+        # TODO: something better with verbosity
+        config_keys['verbose'] = True
+
+        # ensure the encrypting user is always in the recipient list
+        config_keys['default_recipients'].append(config_keys['default_key'])
+        # ensure credentials is an absolute path
+        config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
+        # provide the config keys as the args to creds
+        self.creds = Creds(**config_keys)
 
     def add(self, args):
         new_cred = yaml.dump(self.creds.add(args.name), default_flow_style=False)
@@ -48,6 +65,33 @@ class CredCLI(object):
                 print os.path.relpath(cred, self.creds.credentials)
         return 0
 
+    def __v(self, s):
+        # TODO: better verbosity
+        pass
+
+    def check_config(self, config):
+        required_keys = [
+                            "credentials",
+                            "default_key",
+                            "default_recipients",
+                            "extension",
+                            "gpg_home",
+                            "sign",
+                            "use_agent",
+                        ]
+        config_keys = config.keys()
+        config_keys.sort()
+        if config_keys != required_keys:
+            missing_set = Set(required_keys) - Set(config_keys)
+            excess_set = Set(config_keys) - Set(required_keys)
+            for key in missing_set:
+                sys.stderr.write("Missing config key: %s\n" % key)
+            if excess_set:
+                for excess_parameter in excess_set:
+                    self.__v("Excess parameter in config: %s" % excess_parameter)
+            else:
+                raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
+
     def modify(self, args):
         changed_cred = yaml.dump(self.creds.mod(args.name), default_flow_style=False)
         print "\n\nChanged cred is..."
@@ -55,27 +99,29 @@ class CredCLI(object):
         return 0
 
 class Creds(object):
-    def __init__(self, config=False, verbose=False):
+    def __init__(
+            self,
+            credentials,
+            default_key,
+            default_recipients,
+            extension,
+            gpg_home,
+            sign,
+            use_agent,
+            verbose,
+        ):
         # force a sane default umask
         os.umask(0077)
-       
+
+        self.credentials = credentials
+        self.default_key = default_key
+        self.default_recipients = default_recipients
+        self.extension = extension
+        self.gpg_home = gpg_home
+        self.sign = sign
+        self.use_agent = use_agent
         self.verbose = verbose
 
-        if not config:
-            config = os.path.expanduser("~") + "/.credconf.yaml"
-
-        with open(config, "r") as config:
-            config_keys = self.load_yaml(config)
- 
-        self.check_config(config_keys)
-
-        # ensure the encrypting user is always in the recipient list
-        config_keys['default_recipients'].append(config_keys['default_key'])
-        # ensure credentials is an absolute path
-        config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
-        # copy all the config keys into self
-        self.__dict__.update(config_keys)
- 
         # checking the veracity of the config
         # does the passwords, dir exist? do we have perms?
         self.__ensure_path(self.credentials)
@@ -164,28 +210,6 @@ class Creds(object):
         if self.verbose:
             sys.stderr.write('\033[93m [CRED] \033[0m %s\n' % message)
 
-    def check_config(self, config):
-        required_keys = [
-                            "credentials",
-                            "default_key",
-                            "default_recipients",
-                            "extension",
-                            "gpg_home",
-                            "sign",
-                            "use_agent",
-                        ]
-        config_keys = config.keys()
-        config_keys.sort()
-        if config_keys != required_keys:
-            missing_set = Set(required_keys) - Set(config.keys())
-            excess_set = Set(config.keys()) - Set(required_keys)
-            for key in missing_set:
-                sys.stderr.write("Missing config key: %s\n" % key)
-            if excess_set:
-                for excess_parameter in excess_set:
-                    self.__v("Excess parameter in config: %s" % excess_parameter)
-            else:
-                raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
     def mod(self, cred):
         orig_cred = self.get(cred)
