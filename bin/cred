@@ -17,66 +17,23 @@ import yaml
 
 from sets import Set
 
-VERBOSITY = {
-    'silent'        => 0,
-    'explanatory'   => 1,
-    'verbose'       => 2,
-}
+class CredCLI(object):
+    def setup(self, args):
+        self.creds = Creds(args.config)
 
-class Cred(object):
-    def __init__(self, args, verbosity=VERBOSITY['explanatory']):
-        # TODO: handle verbosity
-        
-        if not config:
-            config = os.path.expanduser("~") + "/.credconf.yaml"
-        config_keys = self.load_yaml(self.__open(config, "r"))
- 
-        self.check_config(config_keys)
-
-        # ensure the encrypting user is always in the recipient list
-        config_keys['default_recipients'].append(config_keys['default_key'])
-        # ensure credentials is an absolute path
-        config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
- 
-        self.creds = Creds(config)
-        self.args = args
-
-    def add(self):
-        new_cred = yaml.dump(self.creds.add(self.args.name), default_flow_style=False)
+    def add(self, args):
+        new_cred = yaml.dump(self.creds.add(args.name), default_flow_style=False)
         print "\n\nSaved cred is..."
         print new_cred
         return 0
-    
-    def check_config(self, config):
-        required_keys = [
-                            "credentials",
-                            "default_key",
-                            "default_recipients",
-                            "extension",
-                            "gpg_home",
-                            "sign",
-                            "use_agent",
-                        ]
-        config_keys = config.keys()
-        config_keys.sort()
-        if config_keys != required_keys:
-            missing_set = Set(required_keys) - Set(config.keys())
-            excess_set = Set(config.keys()) - Set(required_keys)
-            for key in missing_set:
-                sys.stderr.write("Missing config key: %s\n" % key)
-            if excess_set:
-                for excess_parameter in excess_set:
-                    self.__v("Excess parameter in config: %s" % excess_parameter)
-            else:
-                raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
-    def get(self):
-        if self.args.name:
-            cred = self.creds.get(self.args.name)
-            if self.args.fields:
-                for field in self.args.fields:
+    def get(self, args):
+        if args.name:
+            cred = self.creds.get(args.name)
+            if args.fields:
+                for field in args.fields:
                     print cred.get(field)
-            elif self.args.list_keys:
+            elif args.list_keys:
                 for field in cred:
                     print field
             else:
@@ -84,15 +41,15 @@ class Cred(object):
         else:
             cred_list = self.creds.list_credentials()
             for namespace in self.creds.list_namespaces():
-                sub_self.creds = [os.path.join(namespace, cred) for cred in self.creds.list_credentials(namespace)]
-                cred_list.extend(sub_self.creds)
+                sub_creds = [os.path.join(namespace, cred) for cred in self.creds.list_credentials(namespace)]
+                cred_list.extend(sub_creds)
             for cred in cred_list:
                 # relpath because relpath is how you'll refer to them
                 print os.path.relpath(cred, self.creds.credentials)
         return 0
 
-    def modify(self):
-        changed_cred = yaml.dump(self.creds.mod(self.args.name), default_flow_style=False)
+    def modify(self, args):
+        changed_cred = yaml.dump(self.creds.mod(args.name), default_flow_style=False)
         print "\n\nChanged cred is..."
         print changed_cred
         return 0
@@ -101,6 +58,21 @@ class Creds(object):
     def __init__(self, config=False, verbose=False):
         # force a sane default umask
         os.umask(0077)
+       
+        self.verbose = verbose
+
+        if not config:
+            config = os.path.expanduser("~") + "/.credconf.yaml"
+
+        with open(config, "r") as config:
+            config_keys = self.load_yaml(config)
+ 
+        self.check_config(config_keys)
+
+        # ensure the encrypting user is always in the recipient list
+        config_keys['default_recipients'].append(config_keys['default_key'])
+        # ensure credentials is an absolute path
+        config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
         # copy all the config keys into self
         self.__dict__.update(config_keys)
  
@@ -192,6 +164,28 @@ class Creds(object):
         if self.verbose:
             sys.stderr.write('\033[93m [CRED] \033[0m %s\n' % message)
 
+    def check_config(self, config):
+        required_keys = [
+                            "credentials",
+                            "default_key",
+                            "default_recipients",
+                            "extension",
+                            "gpg_home",
+                            "sign",
+                            "use_agent",
+                        ]
+        config_keys = config.keys()
+        config_keys.sort()
+        if config_keys != required_keys:
+            missing_set = Set(required_keys) - Set(config.keys())
+            excess_set = Set(config.keys()) - Set(required_keys)
+            for key in missing_set:
+                sys.stderr.write("Missing config key: %s\n" % key)
+            if excess_set:
+                for excess_parameter in excess_set:
+                    self.__v("Excess parameter in config: %s" % excess_parameter)
+            else:
+                raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
     def mod(self, cred):
         orig_cred = self.get(cred)
@@ -299,39 +293,42 @@ class CredsArgParser(argparse.ArgumentParser):
         self.print_help()
         sys.exit(2)
 
-def main():
-    parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
+def method(args):
+    print args
 
-    parser.add_argument('-c', '--config', dest='config', default=False,
-        help="An alternate configuration path. Default: ~/.credconf.yaml")
-    parser.add_argument('-v', '--verbose', dest='verbose', default=False,
-        action='store_true', help="Verbose")
+class Main(CredCLI):
+    def __init__(self):
+        parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
 
-    subparsers = parser.add_subparsers(help='Verbs for cred manipulation.')
+        parser.add_argument('-c', '--config', dest='config', default=False,
+            help="An alternate configuration path. Default: ~/.credconf.yaml")
+        parser.add_argument('-v', '--verbose', dest='verbose', default=False,
+            action='store_true', help="Verbose")
 
-    add_parser = subparsers.add_parser('add', help='Add a credential or add a key to a credential.')
-    add_parser.add_argument('name', nargs="?", help="The name of the credential to add, i.e. example.com")
-    add_parser.set_defaults(func=add_cred)
+        subparsers = parser.add_subparsers(help='Verbs for cred manipulation.')
 
-    get_parser = subparsers.add_parser('get', help='Get credential contents or credential keys.')
-    get_parser.add_argument('-k', '--keys', dest='list_keys', action='store_true', help='List only the keys in a credential.')
-    get_parser.add_argument('name', nargs="?", default=False,
-        help="The name of the credential to get contents of. If no name is specified, lists all credentials.")
-    get_parser.add_argument('fields', default=False, nargs="*",
-        help="The name of the field or fields to get. If no fields are specified, all fields are returned.")
-    get_parser.set_defaults(func=get_cred)
+        add_parser = subparsers.add_parser('add', help='Add a credential or add a key to a credential.')
+        add_parser.add_argument('name', nargs="?", help="The name of the credential to add, i.e. example.com")
+        add_parser.set_defaults(func=self.add)
 
-    mod_parser = subparsers.add_parser('modify', help='Modify an existing credential.')
-    mod_parser.add_argument('name', nargs='?', help="The name of the credential to modify.")
-    mod_parser.set_defaults(func=mod_cred)
+        get_parser = subparsers.add_parser('get', help='Get credential contents or credential keys.')
+        get_parser.add_argument('-k', '--keys', dest='list_keys', action='store_true', help='List only the keys in a credential.')
+        get_parser.add_argument('name', nargs="?", default=False,
+            help="The name of the credential to get contents of. If no name is specified, lists all credentials.")
+        get_parser.add_argument('fields', default=False, nargs="*",
+            help="The name of the field or fields to get. If no fields are specified, all fields are returned.")
+        get_parser.set_defaults(func=self.get)
 
-    args = parser.parse_args()
+        mod_parser = subparsers.add_parser('modify', help='Modify an existing credential.')
+        mod_parser.add_argument('name', nargs='?', help="The name of the credential to modify.")
+        mod_parser.set_defaults(func=self.modify)
+        
+        args = parser.parse_args()
+        
+        self.setup(args)
+        self.exit_status = args.func(args)
 
-    try:
-        return args.func(args)
-    except Exception as (errno, strerr):
-        sys.stderr.write('%s: %s\n' % (errno, strerr))
-        return 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main = Main()
+    sys.exit(main.exit_status)
