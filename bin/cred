@@ -11,6 +11,7 @@ import argparse
 import gnupg
 import getpass
 import glob
+import logging
 import os, errno
 import sys
 import yaml
@@ -65,10 +66,6 @@ class CredCLI(object):
                 print os.path.relpath(cred, self.creds.credentials)
         return 0
 
-    def __v(self, s):
-        # TODO: better verbosity
-        pass
-
     def check_config(self, config):
         required_keys = [
                             "credentials",
@@ -85,10 +82,10 @@ class CredCLI(object):
             missing_set = Set(required_keys) - Set(config_keys)
             excess_set = Set(config_keys) - Set(required_keys)
             for key in missing_set:
-                sys.stderr.write("Missing config key: %s\n" % key)
+                logging.critical("Missing config key: %s\n" % key)
             if excess_set:
                 for excess_parameter in excess_set:
-                    self.__v("Excess parameter in config: %s" % excess_parameter)
+                    logging.warn("Excess parameter in config: %s" % excess_parameter)
             else:
                 raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
@@ -138,7 +135,7 @@ class Creds(object):
 
     def __open(self, path, mode):
         try:
-            self.__v("Opening: %s, %s" % (path, mode))
+            logging.info("Opening: %s, %s" % (path, mode))
             stream = open(path, mode)
         except IOError as err:
             raise Exception(err.strerror, err.filename)
@@ -158,16 +155,16 @@ class Creds(object):
             if err.errno != errno.EEXIST:
                 raise
         else:
-            sys.stderr.write("Creating the nonexistant %s.\n" % path)
+            logging.debug("Creating the nonexistant %s.\n" % path)
         
 
     def __cryptwrap(self, fn, cred, *args, **kwargs):
         # clone the method from the gpg class
-        self.__v("Trying method: %s on: %s" % (fn, cred))
+        logging.debug("Trying method: %s on: %s" % (fn, cred))
         method = getattr(self.gpg, fn)
         if not self.use_agent:
             if not hasattr(self, "passphrase"):
-                self.__v("Prompting for password.")
+                logging.debug("Prompting for password.")
                 self.passphrase = getpass.getpass()
             kwargs['passphrase'] = self.passphrase 
 
@@ -206,11 +203,6 @@ class Creds(object):
             kwargs['sign'] = self.default_key
         return self.__cryptwrap('encrypt', cred, *args, **kwargs)
 
-    def __v(self, message):
-        if self.verbose:
-            sys.stderr.write('\033[93m [CRED] \033[0m %s\n' % message)
-
-
     def mod(self, cred):
         orig_cred = self.get(cred)
         orig_cred_keys = orig_cred.keys()
@@ -238,12 +230,11 @@ class Creds(object):
         prompt = "%s: " % query
         if default:
             prompt += "[%s] " % default
+        logging.debug("Asking for %s" % query)
         response = raw_input(prompt)
         if not response:
-            self.__v("asked for %s got %s" % (query, default))
             return default
         else:
-            self.__v("asked for %s got %s" % (query, response))
             return response
 
     def add(self, cred):
@@ -269,7 +260,7 @@ class Creds(object):
     def save(self, cred, new_cred):
         path = self.get_path(cred)
         with self.__open(path, "wb") as new_cred_file:
-            self.__v("Saving cred: %s..." % path)
+            logging.debug("Saving cred: %s..." % path)
             new_cred = "\n".join(new_cred)
             encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
             new_cred_file.write(str(encrypted_cred))
@@ -313,7 +304,7 @@ class Creds(object):
 
 class CredsArgParser(argparse.ArgumentParser):
     def error(self, message):
-        sys.stderr.write('error: %s\n' % message)
+        logging.critical('error: %s\n' % message)
         self.print_help()
         sys.exit(2)
 
