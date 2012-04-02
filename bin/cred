@@ -20,6 +20,22 @@ from sets import Set
 
 class CredCLI(object):
     def setup(self, args):
+        
+        # assume we only log critical stuff
+        loglevel = logging.CRITICAL
+
+        # upgrade log levels if desired
+        if args.verbose:
+            loglevel = logging.INFO
+
+        if args.super_verbose:
+            loglevel = logging.DEBUG
+        
+        # set up logging
+        logging.basicConfig(
+            format='[Cred %(levelname)s] %(asctime)s: %(message)s',
+            level=loglevel,
+        )
 
         if not args.config:
             config = os.path.expanduser("~") + "/.credconf.yaml"
@@ -29,8 +45,8 @@ class CredCLI(object):
  
         self.check_config(config_keys)
 
-        # TODO: something better with verbosity
-        config_keys['verbose'] = True
+        # this causes python-gnupg to emit messages
+        config_keys['verbose'] = args.super_verbose
 
         # ensure the encrypting user is always in the recipient list
         config_keys['default_recipients'].append(config_keys['default_key'])
@@ -82,10 +98,10 @@ class CredCLI(object):
             missing_set = Set(required_keys) - Set(config_keys)
             excess_set = Set(config_keys) - Set(required_keys)
             for key in missing_set:
-                logging.critical("Missing config key: %s\n" % key)
+                logging.critical("Missing config key: %s", key)
             if excess_set:
                 for excess_parameter in excess_set:
-                    logging.warn("Excess parameter in config: %s" % excess_parameter)
+                    logging.warn("Excess parameter in config: %s", excess_parameter)
             else:
                 raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
 
@@ -135,7 +151,7 @@ class Creds(object):
 
     def __open(self, path, mode):
         try:
-            logging.info("Opening: %s, %s" % (path, mode))
+            logging.info("Opening: %s, %s", path, mode)
             stream = open(path, mode)
         except IOError as err:
             raise Exception(err.strerror, err.filename)
@@ -155,12 +171,12 @@ class Creds(object):
             if err.errno != errno.EEXIST:
                 raise
         else:
-            logging.debug("Creating the nonexistant %s.\n" % path)
+            logging.debug("Creating the nonexistant %s.", path)
         
 
     def __cryptwrap(self, fn, cred, *args, **kwargs):
         # clone the method from the gpg class
-        logging.debug("Trying method: %s on: %s" % (fn, cred))
+        logging.debug("Trying method: %s on: %s", fn, cred)
         method = getattr(self.gpg, fn)
         if not self.use_agent:
             if not hasattr(self, "passphrase"):
@@ -230,7 +246,7 @@ class Creds(object):
         prompt = "%s: " % query
         if default:
             prompt += "[%s] " % default
-        logging.debug("Asking for %s" % query)
+        logging.debug("Asking for %s", query)
         response = raw_input(prompt)
         if not response:
             return default
@@ -260,7 +276,7 @@ class Creds(object):
     def save(self, cred, new_cred):
         path = self.get_path(cred)
         with self.__open(path, "wb") as new_cred_file:
-            logging.debug("Saving cred: %s..." % path)
+            logging.debug("Saving cred: %s" , path)
             new_cred = "\n".join(new_cred)
             encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
             new_cred_file.write(str(encrypted_cred))
@@ -304,7 +320,7 @@ class Creds(object):
 
 class CredsArgParser(argparse.ArgumentParser):
     def error(self, message):
-        logging.critical('error: %s\n' % message)
+        logging.critical(message)
         self.print_help()
         sys.exit(2)
 
@@ -314,8 +330,8 @@ class Main(CredCLI):
 
         parser.add_argument('-c', '--config', dest='config', default=False,
             help="An alternate configuration path. Default: ~/.credconf.yaml")
-        parser.add_argument('-v', '--verbose', dest='verbose', default=False,
-            action='store_true', help="Verbose")
+        parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help="Informational messages.")
+        parser.add_argument('-vv', '--super-verbose', dest='super_verbose', action='store_true', default=False, help="Debug messages.")
 
         subparsers = parser.add_subparsers(help='Verbs for cred manipulation.')
 
@@ -336,10 +352,9 @@ class Main(CredCLI):
         mod_parser.set_defaults(func=self.modify)
         
         args = parser.parse_args()
-        
+
         self.setup(args)
         self.exit_status = args.func(args)
-
 
 if __name__ == "__main__":
     main = Main()
