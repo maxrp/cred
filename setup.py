@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 kwds = {}
 
@@ -12,12 +12,13 @@ kwds['long_description'] = f.read()
 f.close()
 
 setup(name='cred',
-    version='0.9.0.1',
+    version='0.9.0.3',
     description='GnuPG frontend for storing credentials in YAML',
     install_requires=['python-gnupg>=0.2.9'],
     author='Max R.D. Parmer',
     license="GPL",
     author_email='m@x-pl.us',
     scripts=['bin/cred'],
+    packages=find_packages(),
     **kwds
 )
