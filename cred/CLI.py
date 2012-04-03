@@ -29,19 +29,19 @@ class CLI(object):
             config = os.path.expanduser("~") + "/.credconf.yaml"
 
         with open(config, "r") as config:
-            config_keys = yaml.load(config)
+            self.config = yaml.load(config)
  
-        self.check_config(config_keys)
+        self.__check_config()
 
         # this causes python-gnupg to emit messages
-        config_keys['verbose'] = args.super_verbose
+        self.config['verbose'] = args.super_verbose
 
         # ensure the encrypting user is always in the recipient list
-        config_keys['default_recipients'].append(config_keys['default_key'])
+        self.config['default_recipients'].append(self.config['default_key'])
         # ensure credentials is an absolute path
-        config_keys['credentials'] = os.path.abspath(config_keys['credentials'])
+        self.config['credentials'] = os.path.abspath(self.config['credentials'])
         # provide the config keys as the args to creds
-        self.creds = Store(**config_keys)
+        self.creds = Store(**self.config)
 
     def add(self, args):
         new_cred = yaml.dump(self.creds.add(args.name), default_flow_style=False)
@@ -70,7 +70,7 @@ class CLI(object):
                 print os.path.relpath(cred, self.creds.credentials)
         return 0
 
-    def check_config(self, config):
+    def __check_config(self):
         required_keys = [
                             "credentials",
                             "default_key",
@@ -80,7 +80,7 @@ class CLI(object):
                             "sign",
                             "use_agent",
                         ]
-        config_keys = config.keys()
+        config_keys = self.config.keys()
         config_keys.sort()
         if config_keys != required_keys:
             missing_set = Set(required_keys) - Set(config_keys)
@@ -89,6 +89,7 @@ class CLI(object):
                 logging.critical("Missing config key: %s", key)
             if excess_set:
                 for excess_parameter in excess_set:
+                    del self.config[excess_parameter]
                     logging.warn("Excess parameter in config: %s", excess_parameter)
             else:
                 raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
