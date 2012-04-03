@@ -14,7 +14,10 @@ f.close()
 setup(name='cred',
     version='0.9.0.3',
     description='GnuPG frontend for storing credentials in YAML',
-    install_requires=['python-gnupg>=0.2.9'],
+    install_requires=[
+        'python-gnupg>=0.2.9',
+        'PyYAML>=3.10',
+    ],
     author='Max R.D. Parmer',
     license="GPL",
     author_email='m@x-pl.us',
