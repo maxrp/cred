@@ -1,7 +1,7 @@
 Cred: a tool for querying GPG encrypted YAML credentials
 =========================================================
 
-A tool for storing passwords in a regular and readily manipulable encrypted format.
+A tool for storing passwords in a regular and encrypted format.
 
 This tool will:
 
@@ -21,7 +21,7 @@ Requirements
   - A GPG key and some good sense
 - Python 2.7
 
-Recommended
+You might also want...
 -----------
 - Credentials for some stuff you want to encrypt with your gpg public key and possibly the public keys of some associates.
 - [gnupg.vim][4] A nice vim plugin for creating and modifying gpg encrypted text files.
@@ -43,13 +43,13 @@ Setup
 4. Make sure you have ~/.local/bin (or whatever you use) in your path.
 4. Try it out!
         
-        ./cred --help
-        ./cred add example.net
-        ./cred get --keys example.net
-        ./cred get example.net password
-        ./cred add alter-ego/example.net
-        ./cred modify alter-ego/example.net
-        ./cred get
+        cred --help
+        cred add example.net
+        cred get --keys example.net
+        cred get example.net password
+        cred add alter-ego/example.net
+        cred modify alter-ego/example.net
+        cred get
 6. `cat lib/bash_completion.sh >> .bashrc` or whatever; for local completions I have a ~/.bash\_completions which is sourced in my .bashrc and it's not an awful way to deal with personal completion preferences.
 
 Tips
