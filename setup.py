@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 kwds = {}
 
-# Read the long description from the README.txt
+# Read the long description from the README.md
 thisdir = os.path.abspath(os.path.dirname(__file__))
 f = open(os.path.join(thisdir, 'README.md'))
 kwds['long_description'] = f.read()
