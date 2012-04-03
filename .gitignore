@@ -1,6 +1,7 @@
 conf.yaml
 *.asc*
 *.gpg*
+*.pyc
 build
 cred.egg-info
 dist
