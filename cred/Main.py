@@ -51,6 +51,6 @@ class Main(CLI):
         self.setup(args)
         self.exit_status = args.func(args)
 
-if __name__ == "__main__":
+def main():
     main = Main()
-    sys.exit(main.exit_status)
+    return main.exit_status
