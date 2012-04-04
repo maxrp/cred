@@ -21,7 +21,11 @@ setup(name='cred',
     author='Max R.D. Parmer',
     license="GPL",
     author_email='m@x-pl.us',
-    scripts=['bin/cred'],
+    entry_points={
+        'console_scripts': [
+            'cred = cred.Main:main',
+        ],
+    },
     packages=find_packages(),
     **kwds
 )
