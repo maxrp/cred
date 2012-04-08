@@ -190,7 +190,13 @@ class Store(object):
         with self.__open(path, "rb") as encrypted_file:
             decrypted = self.__decrypt(encrypted_file)
 
-        return self.load_yaml(str(decrypted))
+        try:
+            data = yaml.load(str(decrypted))
+        except yaml.YAMLError as err:
+            # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
+            raise Exception(err.context, err.problem)
+        else:
+            return data
 
     def list_credentials(self, namespace=False):
         pattern = "*" + self.extension
@@ -203,11 +209,3 @@ class Store(object):
     def list_namespaces(self):
         return [namespace for namespace in os.listdir(self.credentials) if os.path.isdir(os.path.join(self.credentials, namespace))]
 
-    def load_yaml(self, data):
-        try:
-            data = yaml.load(data)
-        except yaml.YAMLError as err:
-            # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
-            raise Exception(err.context, err.problem)
-        else:
-            return data
