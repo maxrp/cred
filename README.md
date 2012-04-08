@@ -1,17 +1,45 @@
-Cred: a tool for querying GPG encrypted YAML credentials
+cred: an easy password repository for account identity management
 =========================================================
 
-A tool for storing passwords in a regular and encrypted format.
+cred is a tool to enable easy manipulation of a directory tree populated 
+with GnuPG encrypted YAML.
 
-This tool will:
+Examples
+--------
+- Get data from stores
+  - Retrieve key value pairs from a named store
+        
+        $ cred get example.com username password
+        username: foobar
+        password: quuxxyzzy
+  - Retrieve the entire set of data from a store
+        
+        $ cred get example.com
+        username: foobar
+        password: quuxxyzzy
+        uri: https://example.com/login
+  - List attributes in a store
+        
+        $ cred get --keys example.com
+        uri
+        username
+        password
+- Create new stores
+        
+        $ cred add example.com
+        Password:
+        Add which keys?: username, password
+        username: foobar
+        password: quuxxyzzy
+        
+        Saved cred is...
+        password: quuxxyzzy
+        username: foobar
 
-- Retrieve credentials for a domain
-  - all at once or by attribute like "username" or "password"
-  - listing attributes of credentials for a domain
-- Add new credentials and modify existing credentials for a domain
+- Modify existing credentials for a domain
 - Using directories to namespace credentials under the configured credential path
 - Listing credentials
-- Using gpg-agent
+- gpg-agent support
 
 Requirements
 ------------
