@@ -44,7 +44,10 @@ class CLI(object):
         self.creds = Store(**self.config)
 
     def add(self, args):
-        new_cred = yaml.dump(self.creds.add(args.name), default_flow_style=False)
+        new_cred = yaml.dump(
+                                self.creds.add(args.name),
+                                default_flow_style=False
+                                )
         print "\n\nSaved cred is..."
         print new_cred
         return 0
@@ -90,12 +93,21 @@ class CLI(object):
             if excess_set:
                 for excess_parameter in excess_set:
                     del self.config[excess_parameter]
-                    logging.warn("Excess parameter in config: %s", excess_parameter)
+                    logging.warn(
+                                    "Excess parameter in config: %s",
+                                    excess_parameter
+                                    )
             else:
-                raise Exception("Incomplete configuration", "the configuration was missing %d key(s)." % len(missing_set))
+                raise Exception(
+                                "Incomplete configuration",
+                                "missing %d key(s)." % len(missing_set)
+                                )
 
     def modify(self, args):
-        changed_cred = yaml.dump(self.creds.mod(args.name), default_flow_style=False)
+        changed_cred = yaml.dump(
+                                    self.creds.mod(args.name),
+                                    default_flow_style=False
+                                    )
         print "\n\nChanged cred is..."
         print changed_cred
         return 0
