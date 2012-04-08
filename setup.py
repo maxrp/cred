@@ -3,16 +3,15 @@
 import os
 from setuptools import setup, find_packages
 
-kwds = {}
 
-# Read the long description from the README.md
-thisdir = os.path.abspath(os.path.dirname(__file__))
-f = open(os.path.join(thisdir, 'README.md'))
-kwds['long_description'] = f.read()
-f.close()
+def get_desc():
+    """Read the long description from the README.md"""
+    pwd = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(pwd, 'README.md')) as readme:
+        return readme.read()
 
 setup(name='cred',
-    version='0.9.0.3',
+    version='0.9.0.4',
     description='GnuPG frontend for storing credentials in YAML',
     install_requires=[
         'python-gnupg>=0.2.9',
@@ -27,5 +26,5 @@ setup(name='cred',
         ],
     },
     packages=find_packages(),
-    **kwds
+    long_description=get_desc(),
 )
