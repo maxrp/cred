@@ -68,10 +68,10 @@ class Store(object):
             logging.debug("Creating the nonexistant %s.", path)
         
 
-    def __cryptwrap(self, fn, cred, *args, **kwargs):
+    def __cryptwrap(self, fun, cred, *args, **kwargs):
         # clone the method from the gpg class
-        logging.debug("Trying method: %s on: %s", fn, cred)
-        method = getattr(self.gpg, fn)
+        logging.debug("Trying method: %s on: %s", fun, cred)
+        method = getattr(self.gpg, fun)
         if not self.use_agent:
             if not hasattr(self, "passphrase"):
                 logging.debug("Prompting for password.")
@@ -102,7 +102,7 @@ class Store(object):
                 'sig expired'
                 'need passphrase'
             """
-            raise Exception("%s failed" % fn, cred.status)
+            raise Exception("%s failed" % fun, cred.status)
             
     def __decrypt(self, cred, *args, **kwargs):
         # TODO: implement signature verification
