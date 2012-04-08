@@ -8,27 +8,27 @@ Examples
 --------
 - Get data from stores
   - Retrieve key value pairs from a named store
-        
-        $ cred get example.com username password
-        username: foobar
-        password: quuxxyzzy
+                
+                $ cred get example.com username password
+                username: foobar
+                password: quuxxyzzy
 
   - Retrieve the entire set of data from a store
-        
-        $ cred get example.com
-        username: foobar
-        password: quuxxyzzy
-        uri: https://example.com/login
+                        
+                        $ cred get example.com
+                        username: foobar
+                        password: quuxxyzzy
+                        uri: https://example.com/login
 
   - List attributes in a store
-        
-        $ cred get --keys example.com
-        uri
-        username
-        password
+                        
+                        $ cred get --keys example.com
+                        uri
+                        username
+                        password
 
 - Create new stores
-        
+                        
         $ cred add example.com
         Password:
         Add which keys?: username, password
