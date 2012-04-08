@@ -63,5 +63,5 @@ class Main(CLI):
         self.exit_status = args.func(args)
 
 def main():
-    main = Main()
-    return main.exit_status
+    app = Main()
+    return app.exit_status
