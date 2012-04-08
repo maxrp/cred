@@ -40,6 +40,8 @@ class Store(object):
         if not self.agent or not self.use_agent:
             # whether this is the setting or the fallback, it's definitely False henceforth
             self.use_agent = False
+            logging.debug("Prompting for password.")
+            self.passphrase = getpass.getpass()
 
         self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
 
@@ -73,9 +75,6 @@ class Store(object):
         logging.debug("Trying method: %s on: %s", fun, cred)
         method = getattr(self.gpg, fun)
         if not self.use_agent:
-            if not hasattr(self, "passphrase"):
-                logging.debug("Prompting for password.")
-                self.passphrase = getpass.getpass()
             kwargs['passphrase'] = self.passphrase 
 
         cred = method(cred, *args, **kwargs)
