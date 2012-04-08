@@ -21,8 +21,8 @@ class CredsArgParser(argparse.ArgumentParser):
         sys.exit(2)
 
 class Main(CLI):
-    """cred: a tool to enable easy manipulation of a filesystem tree populated 
-    with GPG encrypted YAML data."""
+    """cred: a tool to enable easy manipulation of a directory tree populated 
+    with GnuPG encrypted YAML."""
     def __init__(self):
         description = self.__doc__
         parser = CredsArgParser(description=description)
