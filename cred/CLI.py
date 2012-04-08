@@ -4,6 +4,7 @@ import os
 import yaml
 
 from cred.Store import Store
+from os import listdir, path
 from sets import Set
 
 class CLI(object):
@@ -26,7 +27,7 @@ class CLI(object):
         )
 
         if not args.config:
-            config = os.path.expanduser("~") + "/.credconf.yaml"
+            config = path.expanduser("~") + "/.credconf.yaml"
 
         with open(config, "r") as config:
             self.config = yaml.load(config)
@@ -39,7 +40,7 @@ class CLI(object):
         # ensure the encrypting user is always in the recipient list
         self.config['default_recipients'].append(self.config['default_key'])
         # ensure credentials is an absolute path
-        self.config['credentials'] = os.path.abspath(self.config['credentials'])
+        self.config['credentials'] = path.abspath(self.config['credentials'])
         # provide the config keys as the args to creds
         self.creds = Store(**self.config)
 
@@ -67,22 +68,28 @@ class CLI(object):
             cred_list = self.list_credentials()
             for namespace in self.list_namespaces():
                 for cred in self.list_credentials(namespace):
-                    cred_list.append(os.path.join(namespace, cred))
+                    cred_list.append(path.join(namespace, cred))
             for cred in cred_list:
                 # relpath because relpath is how you'll refer to them
-                print os.path.relpath(cred, self.config['credentials'])
+                print path.relpath(cred, self.config['credentials'])
         return 0
     
     def list_credentials(self, namespace=False):
         pattern = "*" + self.config['extension']
         if namespace:
-            list_path = os.path.join(self.config['credentials'], namespace, pattern)
+            creds = path.join(self.config['credentials'], namespace, pattern)
         else:
-            list_path = os.path.join(self.config['credentials'], pattern)
-        return [cred.replace(self.config['extension'], "") for cred in glob.glob(list_path)]
+            creds = path.join(self.config['credentials'], pattern)
+        creds = glob.glob(creds)
+        return [cred.replace(self.config['extension'], "") for cred in creds]
 
     def list_namespaces(self):
-        return [namespace for namespace in os.listdir(self.config['credentials']) if os.path.isdir(os.path.join(self.config['credentials'], namespace))]
+        namespaces = list()
+        for namespace in listdir(self.config['credentials']):
+            ns_path = path.join(self.config['credentials'], namespace)
+            if path.isdir(ns_path):
+                namespaces.append(ns_path)
+        return namespaces
 
 
     def __check_config(self):
