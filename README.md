@@ -1,5 +1,5 @@
-cred: an easy encrypted repository for account management or whatever
-=====================================================================
+cred: an encrypted repository for account management
+====================================================
 
 cred is a tool to enable easy manipulation of a directory tree populated 
 with GnuPG encrypted YAML.
