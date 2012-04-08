@@ -12,18 +12,21 @@ Examples
         $ cred get example.com username password
         username: foobar
         password: quuxxyzzy
+
   - Retrieve the entire set of data from a store
         
         $ cred get example.com
         username: foobar
         password: quuxxyzzy
         uri: https://example.com/login
+
   - List attributes in a store
         
         $ cred get --keys example.com
         uri
         username
         password
+
 - Create new stores
         
         $ cred add example.com
