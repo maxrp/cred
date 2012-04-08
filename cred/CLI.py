@@ -1,3 +1,4 @@
+import glob
 import logging
 import os
 import yaml
@@ -63,14 +64,26 @@ class CLI(object):
             else:
                 print yaml.dump(cred, default_flow_style=False)
         else:
-            cred_list = self.creds.list_credentials()
-            for namespace in self.creds.list_namespaces():
-                for cred in self.creds.list_credentials(namespace):
+            cred_list = self.list_credentials()
+            for namespace in self.list_namespaces():
+                for cred in self.list_credentials(namespace):
                     cred_list.append(os.path.join(namespace, cred))
             for cred in cred_list:
                 # relpath because relpath is how you'll refer to them
-                print os.path.relpath(cred, self.creds.credentials)
+                print os.path.relpath(cred, self.config['credentials'])
         return 0
+    
+    def list_credentials(self, namespace=False):
+        pattern = "*" + self.config['extension']
+        if namespace:
+            list_path = os.path.join(self.config['credentials'], namespace, pattern)
+        else:
+            list_path = os.path.join(self.config['credentials'], pattern)
+        return [cred.replace(self.config['extension'], "") for cred in glob.glob(list_path)]
+
+    def list_namespaces(self):
+        return [namespace for namespace in os.listdir(self.config['credentials']) if os.path.isdir(os.path.join(self.config['credentials'], namespace))]
+
 
     def __check_config(self):
         required_keys = [

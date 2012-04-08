@@ -198,14 +198,3 @@ class Store(object):
         else:
             return data
 
-    def list_credentials(self, namespace=False):
-        pattern = "*" + self.extension
-        if namespace:
-            list_path = os.path.join(self.credentials, namespace, pattern)
-        else:
-            list_path = os.path.join(self.credentials, pattern)
-        return [cred.replace(self.extension, "") for cred in glob.glob(list_path)]
-
-    def list_namespaces(self):
-        return [namespace for namespace in os.listdir(self.credentials) if os.path.isdir(os.path.join(self.credentials, namespace))]
-
