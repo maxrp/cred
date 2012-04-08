@@ -66,8 +66,8 @@ class CLI(object):
         else:
             cred_list = self.creds.list_credentials()
             for namespace in self.creds.list_namespaces():
-                sub_creds = [os.path.join(namespace, cred) for cred in self.creds.list_credentials(namespace)]
-                cred_list.extend(sub_creds)
+                for cred in self.creds.list_credentials(namespace):
+                    cred_list.append(os.path.join(namespace, cred))
             for cred in cred_list:
                 # relpath because relpath is how you'll refer to them
                 print os.path.relpath(cred, self.creds.credentials)
