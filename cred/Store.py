@@ -3,7 +3,6 @@ import glob
 import gnupg
 import logging
 import os, errno
-import sys
 import yaml
 
 class Store(object):
