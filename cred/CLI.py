@@ -1,5 +1,5 @@
 import logging
-import os, errno
+import os
 import sys
 import yaml
 
