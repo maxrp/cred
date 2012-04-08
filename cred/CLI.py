@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 import yaml
 
 from cred.Store import Store
