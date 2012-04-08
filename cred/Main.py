@@ -21,7 +21,8 @@ class CredsArgParser(argparse.ArgumentParser):
 
 class Main(CLI):
     def __init__(self):
-        parser = CredsArgParser(description="Query passwords from GPG encrypted files.")
+        description = "Query passwords from GPG encrypted files."
+        parser = CredsArgParser(description=description)
 
         parser.add_argument('-c', '--config', dest='config', default=False,
             help="An alternate configuration path. Default: ~/.credconf.yaml")
