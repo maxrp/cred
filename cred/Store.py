@@ -37,12 +37,16 @@ class Store(object):
 
         # wanting to use an agent is cool, but if you don't have one...
         if not self.agent or not self.use_agent:
-            # whether this is the setting or the fallback, it's definitely False henceforth
+            # whether this is the setting or the fallback, False henceforth
             self.use_agent = False
             logging.debug("Prompting for password.")
             self.passphrase = getpass.getpass()
 
-        self.gpg = gnupg.GPG(gnupghome=self.gpg_home, use_agent=self.use_agent, verbose=self.verbose)
+        self.gpg = gnupg.GPG(
+                                gnupghome=self.gpg_home,
+                                use_agent=self.use_agent,
+                                verbose=self.verbose
+                            )
 
     def __open(self, path, mode):
         try:
@@ -56,9 +60,10 @@ class Store(object):
     def __ensure_path(self, path):
         requested_path = os.path.abspath(path)
         prefix = os.path.commonprefix([requested_path, self.credentials])
-        # constrain the whole operation to subpaths of the configured credential directory
+        # constrain to subpaths of the configured credential directory
         if prefix != self.credentials:
-            message = 'the requested path: \n\t %s\nis outside the configured credential directory:\n\t%s' % (requested_path, self.credentials)
+            message = '''the requested path: \n\t %s\nis outside the configured
+            credential directory:\n\t%s''' % (requested_path, self.credentials)
             raise Exception('Path error', message)
         try:
             os.makedirs(path)
@@ -191,7 +196,7 @@ class Store(object):
         try:
             data = yaml.load(str(decrypted))
         except yaml.YAMLError as err:
-            # surpress most of YAMLError to avoid sending a stacktrace with a password to stderr
+            # surpress most of YAMLError to avoid randomly sending to stderr
             raise Exception(err.context, err.problem)
         else:
             return data
