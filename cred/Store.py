@@ -75,6 +75,29 @@ class Store(object):
         
 
     def __cryptwrap(self, fun, cred, *args, **kwargs):
+        """
+        A helper function to enforce some basic logic (mostly injecting a
+        passphrase if necessary) and implement logging of calls out to the 
+        gnupg library.
+
+        I should eventually handle some of the recoverable cases. Potential 
+        values of cred.status are:
+            'signature bad'
+            'signature good'
+            'signature valid'
+            'signature error'
+            'no public key'
+            'need symmetric passphrase'
+            'decryption incomplete'
+            'encryption incomplete'
+            'decryption ok'
+            'encryption ok'
+            'invalid recipient'
+            'key expired'
+            'sig created'
+            'sig expired'
+            'need passphrase'
+        """
         # clone the method from the gpg class
         logging.debug("Trying method: %s on: %s", fun, cred)
         method = getattr(self.gpg, fun)
@@ -86,25 +109,6 @@ class Store(object):
         if cred.ok:
             return cred
         else:
-            """
-            I should eventually handle some of the recoverable cases.
-            Potential values of cred.status are:
-                'signature bad'
-                'signature good'
-                'signature valid'
-                'signature error'
-                'no public key'
-                'need symmetric passphrase'
-                'decryption incomplete'
-                'encryption incomplete'
-                'decryption ok'
-                'encryption ok'
-                'invalid recipient'
-                'key expired'
-                'sig created'
-                'sig expired'
-                'need passphrase'
-            """
             raise Exception("%s failed" % fun, cred.status)
             
     def __decrypt(self, cred, *args, **kwargs):
