@@ -1,5 +1,4 @@
 import getpass
-import glob
 import gnupg
 import logging
 import os, errno
