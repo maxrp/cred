@@ -44,8 +44,8 @@ class Main(CLI):
         get_parser.add_argument('-k', '--keys', dest='list_keys',
             action='store_true', help='List only the keys in a credential.')
         get_parser.add_argument('name', nargs="?", default=False,
-            help="""The name of the credential to get contents of. If no name is 
-            specified, lists all credentials.""")
+            help="""The name of the credential to get contents of. If no name 
+            is specified, lists all credentials.""")
         get_parser.add_argument('fields', default=False, nargs="*",
             help="""The name of the field or fields to get. If no fields are 
             specified, all fields are returned.""")
