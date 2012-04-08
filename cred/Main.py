@@ -14,14 +14,17 @@ import sys
 from cred.CLI import CLI
 
 class CredsArgParser(argparse.ArgumentParser):
+    """Catch errors and then print the usage message exiting with status 2"""
     def error(self, message):
         logging.critical(message)
         self.print_help()
         sys.exit(2)
 
 class Main(CLI):
+    """cred: a tool to enable easy manipulation of a filesystem tree populated 
+    with GPG encrypted YAML data."""
     def __init__(self):
-        description = "Query passwords from GPG encrypted files."
+        description = self.__doc__
         parser = CredsArgParser(description=description)
 
         parser.add_argument('-c', '--config', dest='config', default=False,
