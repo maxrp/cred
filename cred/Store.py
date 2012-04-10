@@ -49,6 +49,8 @@ class Store(object):
                             )
 
     def __open(self, path, mode):
+        """Wrap open() for logging, error clarification (probably should move 
+        to the CLI class)."""
         try:
             logging.info("Opening: %s, %s", path, mode)
             stream = open(path, mode)
@@ -58,6 +60,8 @@ class Store(object):
             return stream
     
     def __ensure_path(self, path):
+        """Provided the requested credential path is within the right subpath,
+        create it or re-raise the error (if the error isn't that it exists."""
         requested_path = os.path.abspath(path)
         prefix = os.path.commonprefix([requested_path, self.credentials])
         # constrain to subpaths of the configured credential directory
@@ -71,7 +75,7 @@ class Store(object):
             if err.errno != errno.EEXIST:
                 raise
         else:
-            logging.debug("Creating the nonexistant %s.", path)
+            logging.debug("Created the nonexistant %s.", path)
         
 
     def __cryptwrap(self, fun, cred, *args, **kwargs):
@@ -112,15 +116,20 @@ class Store(object):
             raise Exception("%s failed" % fun, cred.status)
             
     def __decrypt(self, cred, *args, **kwargs):
+        """Internal decrypt function."""
         # TODO: implement signature verification
         return self.__cryptwrap('decrypt_file', cred, *args, **kwargs)
 
     def __encrypt(self, cred, *args, **kwargs):
+        """Internal encrypt function."""
         if self.sign:
             kwargs['sign'] = self.default_key
         return self.__cryptwrap('encrypt', cred, *args, **kwargs)
 
     def save(self, cred, new_cred):
+        """Take a credential name and a YAML doc, encrypt it per the config and
+        write it to disk, flushing immediately. The cred is represented as it 
+        would be loaded."""
         path = self.get_path(cred)
         with self.__open(path, "wb") as new_cred_file:
             logging.debug("Saving cred: %s" , path)
@@ -128,10 +137,12 @@ class Store(object):
             encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
             new_cred_file.write(str(encrypted_cred))
             new_cred_file.flush()
-
+        # immediately load the new cred using the standard method
         return self.get(cred)
 
     def get_path(self, cred):
+        """Resolve a name like example.com or alter-ego/example.com to a path 
+        as per the configuration."""
         path = os.path.join(self.credentials, cred + self.extension)
         # strip any file names from the path
         parent_path = os.path.dirname(path)
@@ -139,6 +150,7 @@ class Store(object):
         return path
     
     def get(self, cred):
+        """Load a credential by name, decrypting in the process."""
         path = self.get_path(cred)
         with self.__open(path, "rb") as encrypted_file:
             decrypted = self.__decrypt(encrypted_file)
