@@ -143,36 +143,6 @@ class Store(object):
         
         return self.save(cred, new_cred)
 
-    def __prompt(self, query, default=False):
-        prompt = "%s: " % query
-        if default:
-            prompt += "[%s] " % default
-        logging.debug("Asking for %s", query)
-        response = raw_input(prompt)
-        if not response:
-            return default
-        else:
-            return response
-
-    def add(self, cred):
-        path = self.get_path(cred)
-
-        if os.path.exists(path):
-            raise Exception("Credential exists", "try `cred mod %s`" % cred)
-        
-        prompt_defaults = ", ".join(['username', 'password'])
-
-        response = self.__prompt("Add which keys?", prompt_defaults)
-        new_keys = response.split(",")
-
-        # aggregate new and modified keys
-        new_cred = []
-        for key in new_keys:
-            key = key.strip()
-            new_val = self.__prompt(key)
-            new_cred.append("%s: %s" % (key, new_val))
-
-        return self.save(cred, new_cred)
 
     def save(self, cred, new_cred):
         path = self.get_path(cred)

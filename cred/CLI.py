@@ -44,10 +44,28 @@ class CLI(object):
         self.creds = Store(**self.config)
 
     def add(self, args):
+        cred_path = self.creds.get_path(args.name)
+
+        if path.exists(cred_path):
+            raise Exception("Credential exists", "try `cred mod %s`" % args.name)
+        
+        prompt_defaults = ", ".join(['username', 'password'])
+
+        response = self.__prompt("Add which keys?", prompt_defaults)
+        new_keys = response.split(",")
+
+        # aggregate new and modified keys
+        new_cred = []
+        for key in new_keys:
+            key = key.strip()
+            new_val = self.__prompt(key)
+            new_cred.append("%s: %s" % (key, new_val))
+
+        # dump the yaml from a hopefully successful call to save
         new_cred = yaml.dump(
-                                self.creds.add(args.name),
-                                default_flow_style=False
-                                )
+                             self.creds.save(args.name, new_cred),
+                             default_flow_style=False,
+                             )
         print "\n\nSaved cred is..."
         print new_cred
         return 0
@@ -120,6 +138,17 @@ class CLI(object):
                                 "Incomplete configuration",
                                 "missing %d key(s)." % len(missing_set)
                                 )
+    
+    def __prompt(self, query, default=False):
+        prompt = "%s: " % query
+        if default:
+            prompt += "[%s] " % default
+        logging.debug("Asking for %s", query)
+        response = raw_input(prompt)
+        if not response:
+            return default
+        else:
+            return response
 
     def modify(self, args):
         changed_cred = yaml.dump(
