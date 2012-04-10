@@ -21,11 +21,11 @@ Examples
             uri: https://example.com/login
 
   - List attributes in a store
-             
-             $ cred get --keys example.com
-             uri
-             username
-             password
+            
+            $ cred get --keys example.com
+            uri
+            username
+            password
 
 - Create new stores
         
