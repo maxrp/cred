@@ -157,12 +157,11 @@ class CLI(object):
         prompt_defaults = ", ".join(orig_cred_keys)
 
         response = self.__prompt("Modify", prompt_defaults)
-        mod_keys = response.split(",")
+        mod_keys = [key.strip() for key in response.split(",")]
 
         # aggregate new and modified keys
         new_cred = []
         for key in mod_keys:
-            key = key.strip()
             value = orig_cred.get(key, False)
             new_val = self.__prompt(key, value)
             new_cred.append("%s: %s" % (key, new_val))
