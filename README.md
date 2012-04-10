@@ -46,32 +46,32 @@ Examples
 
 Requirements
 ------------
-- [python-gnupg][1]
-- [PyYAML][2]
-- [GnuPG][3]
-  - A GPG key and some good sense
-- Python 2.7
+- recent Python, [python-gnupg][1] and [PyYAML][2]
+- [GnuPG][3] (and a keypair)
 
-You might also want...
+You also might like...
 -----------
-- Credentials for some stuff you want to encrypt with your gpg public key and possibly the public keys of some associates.
+- Some 'key: value' type stuff (like login information) you want to encrypt with keys on your GPG keyring
 - [gnupg.vim][4] A nice vim plugin for creating and modifying gpg encrypted text files.
 
 Setup
 -----
-1. Ensure you have the materials listed above 
-1. Copy the example config to it's proper name:
+- [Know where you're at with your terminal scrollback][5]
+1. Clone the repository:
+        
+        git clone https://github.com/maxrp/cred.git && cd cred
+2. Install the script:
+        
+        python setup.py install --user
+1. Copy the example config to it's proper place:
         
         cp ./examples/credconf.yaml ~/.credconf.yaml 
 2. Edit ~/.credconf.yaml. Namely:
     - Set "gpg\_home" to the right value
     - Set "credentials" to the place you would like to store these credentials. If the directory does not exist, it will be created.
     - Set "default\_key" to the UID of key you want to sign with, i.e. "Bob" or "Bob Dobbs" or "Bob Dobbs \<bob@dobbs.com\>"
-    - Add UIDs of trusted keys to defaul\_recipients, if you like (the default\_key will be appended to this list automatically)
-3. Install the script:
-        
-        python setup.py install --user
-4. Make sure you have ~/.local/bin (or whatever you use) in your path.
+    - Add UIDs of trusted keys to default\_recipients, if you like (the default\_key will be appended to this list automatically)
+4. Make sure you have ~/.local/bin in your path.
 4. Try it out!
         
         cred --help
@@ -93,3 +93,4 @@ The quickest way to get a workable gpg-agent environment for any scenario:
 [2]: http://pypi.python.org/pypi/PyYAML         "PyYAML"
 [3]: http://www.gnupg.org/                      "GnuPG"
 [4]: http://www.vim.org/scripts/script.php?script_id=3645   "gnupg.vim"
+[5]: http://www.securityfocus.com/archive/1/521920/30/0/threaded
