@@ -23,7 +23,7 @@ class CredsArgParser(argparse.ArgumentParser):
 class Main(CLI):
     """cred: a tool to enable easy manipulation of a directory tree populated 
     with GnuPG encrypted YAML."""
-    def __init__(self):
+    def __call__(self):
         description = self.__doc__
         parser = CredsArgParser(description=description)
 
@@ -63,8 +63,6 @@ class Main(CLI):
         args = parser.parse_args()
 
         self.setup(args)
-        self.exit_status = args.func(args)
+        sys.exit(args.func(args))
 
-def main():
-    app = Main()
-    return app.exit_status
+main = Main()
