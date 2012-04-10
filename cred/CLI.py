@@ -109,7 +109,6 @@ class CLI(object):
                 namespaces.append(ns_path)
         return namespaces
 
-
     def __check_config(self):
         required_keys = [
                             "credentials",
