@@ -120,30 +120,6 @@ class Store(object):
             kwargs['sign'] = self.default_key
         return self.__cryptwrap('encrypt', cred, *args, **kwargs)
 
-    def mod(self, cred):
-        orig_cred = self.get(cred)
-        orig_cred_keys = orig_cred.keys()
-        prompt_defaults = ", ".join(orig_cred_keys)
-
-        response = self.__prompt("Modify", prompt_defaults)
-        mod_keys = response.split(",")
-
-        # aggregate new and modified keys
-        new_cred = []
-        for key in mod_keys:
-            key = key.strip()
-            value = orig_cred.get(key, False)
-            new_val = self.__prompt(key, value)
-            new_cred.append("%s: %s" % (key, new_val))
-
-        # copy unchanged keys from the orig_cred
-        for key in orig_cred_keys:
-            if key not in mod_keys:
-                new_cred.append("%s: %s" % (key, orig_cred[key]))
-        
-        return self.save(cred, new_cred)
-
-
     def save(self, cred, new_cred):
         path = self.get_path(cred)
         with self.__open(path, "wb") as new_cred_file:

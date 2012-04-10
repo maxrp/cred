@@ -151,10 +151,30 @@ class CLI(object):
             return response
 
     def modify(self, args):
+        orig_cred = self.creds.get(args.name)
+        orig_cred_keys = orig_cred.keys()
+        prompt_defaults = ", ".join(orig_cred_keys)
+
+        response = self.__prompt("Modify", prompt_defaults)
+        mod_keys = response.split(",")
+
+        # aggregate new and modified keys
+        new_cred = []
+        for key in mod_keys:
+            key = key.strip()
+            value = orig_cred.get(key, False)
+            new_val = self.__prompt(key, value)
+            new_cred.append("%s: %s" % (key, new_val))
+
+        # copy unchanged keys from the orig_cred
+        for key in orig_cred_keys:
+            if key not in mod_keys:
+                new_cred.append("%s: %s" % (key, orig_cred[key]))
+
         changed_cred = yaml.dump(
-                                    self.creds.mod(args.name),
-                                    default_flow_style=False
-                                    )
+                                 self.creds.save(args.name, new_cred),
+                                 default_flow_style=False,
+                                )
         print "\n\nChanged cred is..."
         print changed_cred
         return 0
