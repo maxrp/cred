@@ -140,9 +140,10 @@ class CLI(object):
                                 )
     
     def __prompt(self, query, default=False):
-        prompt = "%s: " % query
         if default:
-            prompt += "[%s] " % default
+            prompt = "%s [%s]:  " % (query, default)
+        else:
+            prompt = "%s: " % query
         logging.debug("Asking for %s", query)
         response = raw_input(prompt)
         if not response:
