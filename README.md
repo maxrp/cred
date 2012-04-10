@@ -31,7 +31,7 @@ Examples
         
         $ cred add example.com
         Password:
-        Add which keys?: username, password
+        Add which keys? [username, password]:
         username: foobar
         password: quuxxyzzy
         
