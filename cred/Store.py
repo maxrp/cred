@@ -4,6 +4,9 @@ import logging
 import os, errno
 import yaml
 
+class NeedsPassphrase(Exception):
+    pass
+
 class Store(object):
     def __init__(
             self,
@@ -24,6 +27,7 @@ class Store(object):
         self.default_recipients = default_recipients
         self.extension = extension
         self.gpg_home = gpg_home
+        self.passphrase = None
         self.sign = sign
         self.use_agent = use_agent
         self.verbose = verbose
@@ -40,7 +44,7 @@ class Store(object):
             # whether this is the setting or the fallback, False henceforth
             self.use_agent = False
             logging.debug("Prompting for password.")
-            self.passphrase = getpass.getpass()
+            #self.passphrase = getpass.getpass()
 
         self.gpg = gnupg.GPG(
                                 gnupghome=self.gpg_home,
@@ -78,7 +82,7 @@ class Store(object):
             logging.debug("Created the nonexistant %s.", path)
         
 
-    def __cryptwrap(self, fun, cred, *args, **kwargs):
+    def __cryptwrap(self, fun, name, *args, **kwargs):
         """
         A helper function to enforce some basic logic (mostly injecting a
         passphrase if necessary) and implement logging of calls out to the 
@@ -103,22 +107,27 @@ class Store(object):
             'need passphrase'
         """
         # clone the method from the gpg class
-        logging.debug("Trying method: %s on: %s", fun, cred)
+        logging.debug("Trying method: %s on: %s", fun, name)
         method = getattr(self.gpg, fun)
-        if not self.use_agent:
+        if self.passphrase:
             kwargs['passphrase'] = self.passphrase 
 
-        cred = method(cred, *args, **kwargs)
+        cred_path = self.get_path(name)
 
+        with self.__open(cred_path, "rb") as encrypted_file:
+            cred = method(encrypted_file, *args, **kwargs)
+        
         if cred.ok:
             return cred
+        elif cred.status == 'need passphrase':
+            raise NeedsPassphrase(name)
         else:
             raise Exception("%s failed" % fun, cred.status)
             
-    def __decrypt(self, cred, *args, **kwargs):
+    def __decrypt(self, name, *args, **kwargs):
         """Internal decrypt function."""
         # TODO: implement signature verification
-        return self.__cryptwrap('decrypt_file', cred, *args, **kwargs)
+        return self.__cryptwrap('decrypt_file', name, *args, **kwargs)
 
     def __encrypt(self, cred, *args, **kwargs):
         """Internal encrypt function."""
@@ -149,13 +158,12 @@ class Store(object):
         self.__ensure_path(parent_path)
         return path
     
-    def get(self, cred):
+    def get(self, name):
         """Load a credential by name, decrypting in the process."""
-        path = self.get_path(cred)
-        with self.__open(path, "rb") as encrypted_file:
-            decrypted = self.__decrypt(encrypted_file)
-
+        decrypted = self.__decrypt(name)
+        
         try:
+            ## this doesn';t work because yaml lib only accepts fuckier types
             data = yaml.load(str(decrypted))
         except yaml.YAMLError as err:
             # surpress most of YAMLError to avoid randomly sending to stderr

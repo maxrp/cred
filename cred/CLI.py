@@ -1,8 +1,9 @@
+import getpass
 import glob
 import logging
 import yaml
 
-from cred.Store import Store
+from cred.Store import Store, NeedsPassphrase
 from os import listdir, path
 from sets import Set
 
@@ -73,7 +74,7 @@ class CLI(object):
 
     def get(self, args):
         if args.name:
-            cred = self.creds.get(args.name)
+            cred = self.__get(args.name)
             if args.fields:
                 for field in args.fields:
                     print cred.get(field)
@@ -151,8 +152,15 @@ class CLI(object):
         else:
             return response
 
+    def __get(self, name):
+        try:
+            return self.creds.get(name)
+        except NeedsPassphrase as err:
+            self.creds.passphrase = getpass.getpass()
+            return self.__get(err.message)
+
     def modify(self, args):
-        orig_cred = self.creds.get(args.name)
+        orig_cred = self.__get(args.name)
         orig_cred_keys = orig_cred.keys()
         prompt_defaults = ", ".join(orig_cred_keys)
 
