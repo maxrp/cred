@@ -149,10 +149,10 @@ class Store(object):
         self.__encrypt(name, new_cred, self.default_recipients)
         return self.get(name)
 
-    def get_path(self, cred):
+    def get_path(self, name):
         """Resolve a name like example.com or alter-ego/example.com to a path 
         as per the configuration."""
-        path = os.path.join(self.credentials, cred + self.extension)
+        path = os.path.join(self.credentials, name + self.extension)
         # strip any file names from the path
         parent_path = os.path.dirname(path)
         self.__ensure_path(parent_path)
