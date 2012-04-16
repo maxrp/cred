@@ -157,7 +157,7 @@ class CLI(object):
             return self.creds.get(name)
         except NeedsPassphrase as err:
             self.creds.passphrase = getpass.getpass()
-            return self.__get(err.message)
+            return self.__get(name)
 
     def modify(self, args):
         orig_cred = self.__get(args.name)

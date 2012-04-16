@@ -82,7 +82,7 @@ class Store(object):
             logging.debug("Created the nonexistant %s.", path)
         
 
-    def __cryptwrap(self, fun, name, *args, **kwargs):
+    def __cryptwrap(self, fun, encrypted_file, *args, **kwargs):
         """
         A helper function to enforce some basic logic (mostly injecting a
         passphrase if necessary) and implement logging of calls out to the 
@@ -106,28 +106,29 @@ class Store(object):
             'sig expired'
             'need passphrase'
         """
+        logging.debug("Trying method: %s", fun)
+        
         # clone the method from the gpg class
-        logging.debug("Trying method: %s on: %s", fun, name)
         method = getattr(self.gpg, fun)
+        
         if self.passphrase:
             kwargs['passphrase'] = self.passphrase 
 
-        cred_path = self.get_path(name)
+        cred = method(encrypted_file, *args, **kwargs)
 
-        with self.__open(cred_path, "rb") as encrypted_file:
-            cred = method(encrypted_file, *args, **kwargs)
-        
         if cred.ok:
             return cred
         elif cred.status == 'need passphrase':
-            raise NeedsPassphrase(name)
+            raise NeedsPassphrase()
         else:
             raise Exception("%s failed" % fun, cred.status)
             
     def __decrypt(self, name, *args, **kwargs):
         """Internal decrypt function."""
         # TODO: implement signature verification
-        return self.__cryptwrap('decrypt_file', name, *args, **kwargs)
+        path = self.get_path(name)
+        with self.__open(path, "rb") as encrypted_file:
+            return self.__cryptwrap('decrypt_file', encrypted_file, *args, **kwargs)
 
     def __encrypt(self, cred, *args, **kwargs):
         """Internal encrypt function."""
@@ -161,7 +162,7 @@ class Store(object):
     def get(self, name):
         """Load a credential by name, decrypting in the process."""
         decrypted = self.__decrypt(name)
-        
+
         try:
             ## this doesn';t work because yaml lib only accepts fuckier types
             data = yaml.load(str(decrypted))
