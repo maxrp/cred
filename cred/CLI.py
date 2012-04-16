@@ -65,7 +65,7 @@ class CLI(object):
 
         # dump the yaml from a hopefully successful call to save
         new_cred = yaml.dump(
-                             self.creds.save(args.name, new_cred),
+                             self.__save(args.name, new_cred),
                              default_flow_style=False,
                              )
         print "\n\nSaved cred is..."
@@ -158,6 +158,15 @@ class CLI(object):
         except NeedsPassphrase as err:
             self.creds.passphrase = getpass.getpass()
             return self.__get(name)
+    
+    def __save(self, name, new_cred):
+        try:
+            logging.info("Trying to save %s" % name)
+            return self.creds.save(name, new_cred)
+        except NeedsPassphrase as err:
+            self.creds.passphrase = getpass.getpass()
+            logging.info("Got passphrase, re-trying save.")
+            return self.__save(name, new_cred)
 
     def modify(self, args):
         orig_cred = self.__get(args.name)
@@ -180,7 +189,7 @@ class CLI(object):
                 new_cred.append("%s: %s" % (key, orig_cred[key]))
 
         changed_cred = yaml.dump(
-                                 self.creds.save(args.name, new_cred),
+                                 self.__save(args.name, new_cred),
                                  default_flow_style=False,
                                 )
         print "\n\nChanged cred is..."

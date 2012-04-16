@@ -130,25 +130,24 @@ class Store(object):
         with self.__open(path, "rb") as encrypted_file:
             return self.__cryptwrap('decrypt_file', encrypted_file, *args, **kwargs)
 
-    def __encrypt(self, cred, *args, **kwargs):
+    def __encrypt(self, name, data, *args, **kwargs):
         """Internal encrypt function."""
         if self.sign:
             kwargs['sign'] = self.default_key
-        return self.__cryptwrap('encrypt', cred, *args, **kwargs)
+        path = self.get_path(name)
+        with self.__open(path, "wb") as encrypted_file:
+            encrypted_cred = self.__cryptwrap('encrypt', data, *args, **kwargs)
+            encrypted_file.write(str(encrypted_cred))
+            encrypted_file.flush()
 
-    def save(self, cred, new_cred):
+    def save(self, name, new_cred):
         """Take a credential name and a YAML doc, encrypt it per the config and
         write it to disk, flushing immediately. The cred is represented as it 
         would be loaded."""
-        path = self.get_path(cred)
-        with self.__open(path, "wb") as new_cred_file:
-            logging.debug("Saving cred: %s" , path)
-            new_cred = "\n".join(new_cred)
-            encrypted_cred = self.__encrypt(new_cred, self.default_recipients)
-            new_cred_file.write(str(encrypted_cred))
-            new_cred_file.flush()
-        # immediately load the new cred using the standard method
-        return self.get(cred)
+        logging.debug("Saving cred: %s" , name)
+        new_cred = "\n".join(new_cred)
+        self.__encrypt(name, new_cred, self.default_recipients)
+        return self.get(name)
 
     def get_path(self, cred):
         """Resolve a name like example.com or alter-ego/example.com to a path 
@@ -164,7 +163,6 @@ class Store(object):
         decrypted = self.__decrypt(name)
 
         try:
-            ## this doesn';t work because yaml lib only accepts fuckier types
             data = yaml.load(str(decrypted))
         except yaml.YAMLError as err:
             # surpress most of YAMLError to avoid randomly sending to stderr
