@@ -14,6 +14,7 @@ setup(name='cred',
     version='0.9.0.4',
     description='GnuPG frontend for storing credentials in YAML',
     install_requires=[
+        'argparse>=1.1',
         'python-gnupg>=0.2.9',
         'PyYAML>=3.10',
     ],
