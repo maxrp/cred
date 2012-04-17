@@ -11,7 +11,7 @@ def get_desc():
         return readme.read()
 
 setup(name='cred',
-    version='0.9.0.4',
+    version='0.9.0.5',
     description='GnuPG frontend for storing credentials in YAML',
     install_requires=[
         'argparse>=1.1',
