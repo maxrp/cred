@@ -162,7 +162,7 @@ class CLI(object):
     def __get(self, name):
         try:
             return self.creds.get(name)
-        except NeedsPassphrase as err:
+        except NeedsPassphrase:
             self.creds.passphrase = getpass.getpass()
             return self.__get(name)
     
@@ -170,7 +170,7 @@ class CLI(object):
         try:
             logging.info("Trying to save %s" % name)
             return self.creds.save(name, new_cred)
-        except NeedsPassphrase as err:
+        except NeedsPassphrase:
             self.creds.passphrase = getpass.getpass()
             logging.info("Got passphrase, re-trying save.")
             return self.__save(name, new_cred)
