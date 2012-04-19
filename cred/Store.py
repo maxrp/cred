@@ -26,30 +26,24 @@ class Store(object):
         self.default_key = default_key
         self.default_recipients = default_recipients
         self.extension = extension
-        self.gpg_home = gpg_home
         self.passphrase = None
         self.sign = sign
-        self.use_agent = use_agent
-        self.verbose = verbose
 
         # checking the veracity of the config
         # does the passwords, dir exist? do we have perms?
         self.__ensure_path(self.credentials)
 
         # check to see if there's actually an agent in the env
-        self.agent = os.environ.get("GPG_AGENT_INFO", False)
+        agent = os.environ.get("GPG_AGENT_INFO", False)
 
         # wanting to use an agent is cool, but if you don't have one...
-        if not self.agent or not self.use_agent:
-            # whether this is the setting or the fallback, False henceforth
-            self.use_agent = False
-            logging.debug("Prompting for password.")
-            #self.passphrase = getpass.getpass()
+        if not agent or not use_agent:
+            use_agent = False
 
         self.gpg = gnupg.GPG(
-                                gnupghome=self.gpg_home,
-                                use_agent=self.use_agent,
-                                verbose=self.verbose
+                                gnupghome=gpg_home,
+                                use_agent=use_agent,
+                                verbose=verbose
                             )
 
     def __open(self, path, mode):
