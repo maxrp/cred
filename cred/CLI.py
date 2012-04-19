@@ -94,6 +94,8 @@ class CLI(object):
         return 0
     
     def list_credentials(self, namespace=False):
+        """List all the credentials in the configured credential directory,
+        alternatively constrain to a subsidiary namespace."""
         pattern = "*" + self.config['extension']
         if namespace:
             creds = path.join(self.config['credentials'], namespace, pattern)
@@ -103,6 +105,7 @@ class CLI(object):
         return [cred.replace(self.config['extension'], "") for cred in creds]
 
     def list_namespaces(self):
+        """List namespace subdirectories in the configured cred directory"""
         namespaces = list()
         for namespace in listdir(self.config['credentials']):
             ns_path = path.join(self.config['credentials'], namespace)
@@ -111,6 +114,8 @@ class CLI(object):
         return namespaces
 
     def __check_config(self):
+        """Check the config for completeness and also excesses (though only
+        log a warning on excesses)."""
         required_keys = [
                             "credentials",
                             "default_key",
@@ -141,6 +146,8 @@ class CLI(object):
                                 )
     
     def __prompt(self, query, default=False):
+        """Present a prompt with an optional default so that the user may press
+        enter to accept the default of the prompt."""
         if default:
             prompt = "%s [%s]:  " % (query, default)
         else:
@@ -169,8 +176,10 @@ class CLI(object):
             return self.__save(name, new_cred)
 
     def modify(self, args):
+        """Prompt to add or update keys in an existing credential."""
         orig_cred = self.__get(args.name)
         orig_cred_keys = orig_cred.keys()
+        # add all credential keys as prompt defaults
         prompt_defaults = ", ".join(orig_cred_keys)
 
         response = self.__prompt("Modify", prompt_defaults)
