@@ -1,4 +1,3 @@
-import getpass
 import gnupg
 import logging
 import os, errno
@@ -122,7 +121,12 @@ class Store(object):
         # TODO: implement signature verification
         path = self.get_path(name)
         with self.__open(path, "rb") as encrypted_file:
-            return self.__cryptwrap('decrypt_file', encrypted_file, *args, **kwargs)
+            return self.__cryptwrap(
+                                    'decrypt_file',
+                                    encrypted_file,
+                                    *args,
+                                    **kwargs
+                                    )
 
     def __encrypt(self, name, data, *args, **kwargs):
         """Internal encrypt function."""
@@ -163,4 +167,3 @@ class Store(object):
             raise Exception(err.context, err.problem)
         else:
             return data
-
