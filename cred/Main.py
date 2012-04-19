@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 __author__ = "Max Parmer <maxp@pdx.edu>"
 __copyright__ = "Copyright 2011"
 __license__ = "GPL"
