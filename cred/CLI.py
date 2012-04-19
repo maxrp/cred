@@ -167,8 +167,8 @@ class CLI(object):
             return self.__get(name)
     
     def __save(self, name, new_cred):
+        logging.info("Trying to save: %s", name)
         try:
-            logging.info("Trying to save %s" % name)
             return self.creds.save(name, new_cred)
         except NeedsPassphrase:
             self.creds.passphrase = getpass.getpass()
