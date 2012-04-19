@@ -49,7 +49,7 @@ class CLI(object):
 
         if path.exists(cred_path):
             raise Exception("Credential exists",
-                            "try `cred mod %s`" % args.name)
+                            "try `cred modify %s`" % args.name)
         
         prompt_defaults = ", ".join(['username', 'password'])
 
