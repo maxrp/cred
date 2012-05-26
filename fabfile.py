@@ -2,10 +2,13 @@ from fabric.api import local
 
 def clean():
     local('find . -name "*.pyc" -exec rm -rf {} \;')
-    local('rm -rf cred.egg-info dist build cred.egg-info pylint.log')
+    local('rm -rf cred.egg-info dist build cred.egg-info pylint.log test.log')
 
 def lint():
-    local('pylint cred/*.py setup.py | tee pylint.log | less')
+    local('pylint cred/*.py setup.py tests/*.py | tee pylint.log | less')
+
+def test():
+    local('nosetests -v | tee test.log | less')
 
 def install():
     local('python setup.py install --user')
