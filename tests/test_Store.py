@@ -1,7 +1,7 @@
 from cred.Store import Store
 
 import logging
-from os import path
+from os import path, rmdir
 
 class TestStore(object):
 
@@ -35,7 +35,9 @@ class TestStore(object):
         self.creds.passphrase = 'federal-llama-dingus'
 
     def tearDown(self):
-        pass
+        # remove the autocreated credential directory
+        rmdir(self.config['credentials'])
 
-    def test_arbitrary(self):
-        assert self.creds.passphrase == 'federal-llama-dingus'
+    def test_creddir_creation(self):
+        """Does instantiation of the Store object create a Stor directory?"""
+        assert path.exists(self.config['credentials'])
