@@ -1,6 +1,7 @@
 from cred.Store import Store
 
 import logging
+import shutil
 from os import path, rmdir
 
 class TestStore(object):
@@ -36,7 +37,7 @@ class TestStore(object):
 
     def tearDown(self):
         # remove the autocreated credential directory
-        rmdir(self.config['credentials'])
+        shutil.rmtree(self.config['credentials'])
 
     def test_creddir_creation(self):
         """Does instantiation of the Store object create a Stor directory?"""
