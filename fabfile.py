@@ -2,6 +2,7 @@ from fabric.api import local
 from os import path
 
 def make_gpg_fixtures(fixtures='./tests/fixtures'):
+    """Perform the time & entropy expensive generation of keys for testing."""
     secring_exists = path.exists('{}/gpghome/secring.gpg'.format(fixtures))
     pubring_exists = path.exists('{}/gpghome/pubring.gpg'.format(fixtures))
     if not secring_exists and not pubring_exists:
@@ -21,6 +22,7 @@ def lint():
     local('pylint cred/*.py setup.py tests/*.py | tee pylint.log | less')
 
 def test():
+    make_gpg_fixtures()
     local('nosetests -v | tee test.log | less')
 
 def install():
