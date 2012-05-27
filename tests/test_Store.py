@@ -43,3 +43,12 @@ class TestStore(object):
         """Does instantiation of the Store object create a credentials
            directory?"""
         assert path.exists(self.config['credentials'])
+
+    def test_b(self):
+        """Can we add a simple credential?"""
+        name = 'example.com'
+        cred_path = self.creds.get_path(name)
+        new_cred = ['username: wat', 'password: hummus']
+        expected_cred = '\n'.join(new_cred)
+        saved_cred = self.creds.save(name, new_cred)
+        assert saved_cred == expected_cred
