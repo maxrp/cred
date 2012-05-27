@@ -24,7 +24,7 @@ class TestStore(object):
         self.config = {
             "credentials":          path.join(fixtures, 'credentials'),
             "default_key":         'fakekey',
-            "default_recipients":   ['acip', 'bcip'],
+            "default_recipients":   [],
             "extension":            '.yaml.gpg',
             "gpg_home":             path.join(fixtures, 'gpghome'),
             "sign":                 True,
@@ -39,6 +39,7 @@ class TestStore(object):
         # remove the autocreated credential directory
         shutil.rmtree(self.config['credentials'])
 
-    def test_creddir_creation(self):
-        """Does instantiation of the Store object create a Stor directory?"""
+    def test_a(self):
+        """Does instantiation of the Store object create a credentials
+           directory?"""
         assert path.exists(self.config['credentials'])
