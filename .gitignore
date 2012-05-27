@@ -8,4 +8,6 @@ dist
 pylint.log
 pubring.gpg
 secring.gpg
+pubring.pub
+secring.sec
 random_seed

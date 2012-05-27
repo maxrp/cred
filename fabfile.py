@@ -3,13 +3,13 @@ from os import path
 
 def make_gpg_fixtures(fixtures='./tests/fixtures'):
     """Perform the time & entropy expensive generation of keys for testing."""
-    secring_exists = path.exists('{}/gpghome/secring.gpg'.format(fixtures))
-    pubring_exists = path.exists('{}/gpghome/pubring.gpg'.format(fixtures))
-    if not secring_exists and not pubring_exists:
-        local('gpg --homedir={0} --batch \
-              --gen-key {0}/gpg-gen-key.params'.format(fixtures))
+    gpghome = path.join(fixtures, 'gpghome')
+    secring = path.join(gpghome, 'secring.gpg')
+    if not path.exists(secring):
+        with cd(gpghome):
+            local('python generate_test_keys.py')
     else:
-        print 'Skipping key generation, keyrings exist.'
+        print 'Skipping key generation, secring exists.'
 
 def clean():
     local('find . -name "*.pyc" -exec rm -rf {} \;')
