@@ -1,4 +1,5 @@
 from fabric.api import *
+import gpgme
 import os
 import credtests
 
@@ -8,7 +9,8 @@ def make_fixtures(fixtures=credtests.FIXTURESDIR):
     if not os.path.exists(secring):
         credtests.gen_keys(fixtures)
     else:
-        print 'Skipping key generation, secring exists.'
+        print 'Skipping key generation, secring exists:'
+        list_test_keys()
 
 def clean():
     local('find . -name "*.pyc" -exec rm -rf {} \;')
@@ -21,6 +23,18 @@ def clean_fixtures(fixtures=credtests.FIXTURESDIR):
 
 def lint():
     local('pylint cred/*.py setup.py tests/*.py | tee pylint.log | less')
+
+def list_test_keys(fixtures=credtests.FIXTURESDIR):
+    os.environ['GNUPGHOME']=fixtures
+    ctx = gpgme.Context()
+    secring = os.path.join(fixtures, 'secring.gpg')
+    with open(secring, 'rb') as keyring:
+        keys = ctx.import_(keyring)
+        [(fingerprint, _, _)] = keys.imports
+        for key in ctx.keylist():
+            for uid in key.uids:
+                print "{0.uid}\n\t{1}".format(uid, fingerprint)
+        del os.environ['GNUPGHOME']
 
 def test():
     make_fixtures()
