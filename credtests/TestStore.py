@@ -36,6 +36,14 @@ class TestStore(object):
         }
 
         self.creds = Store(**self.config)
+        
+        self.test_cred = {'username': 'wat', 'password': 'hummus'}
+        self.test_name = 'example.com'
+
+        # what raw_input data looks like
+        self.test_cred_ui = list()
+        for key, value in self.test_cred.iteritems():
+            self.test_cred_ui.append("{0}: {1}\n".format(key, value))
 
     def tearDown(self):
         """Remove the autocreated credential directory and contents"""
@@ -48,10 +56,5 @@ class TestStore(object):
 
     def test_b(self):
         """Can we add a simple credential?"""
-        name = 'example.com'
-        credential = {'username': 'wat', 'password': 'hummus'}
-        new_cred = list()
-        for key, value in credential.iteritems():
-            new_cred.append("{0}: {1}\n".format(key, value))
-        saved = self.creds.save(name, new_cred)
-        assert saved == credential
+        saved = self.creds.save(self.test_name, self.test_cred_ui)
+        assert saved == self.test_cred
