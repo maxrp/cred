@@ -50,8 +50,7 @@ class TestStore(object):
         shutil.rmtree(self.config['credentials'])
 
     def test_a(self):
-        """Does instantiation of the Store object create a credentials
-           directory?"""
+        """Does instantiation of the Store object create a credentials dir?"""
         assert path.exists(self.config['credentials'])
 
     def test_b(self):
