@@ -1,13 +1,12 @@
 from fabric.api import *
 from os import path
+import tests
 
 def make_gpg_fixtures(fixtures='./tests/fixtures'):
     """Perform the time & entropy expensive generation of keys for testing."""
-    gpghome = path.join(fixtures, 'gpghome')
-    secring = path.join(gpghome, 'secring.gpg')
+    secring = path.join(fixtures, 'secring.gpg')
     if not path.exists(secring):
-        with cd(gpghome):
-            local('python generate_test_keys.py')
+        tests.util.genkey(fixtures)
     else:
         print 'Skipping key generation, secring exists.'
 
