@@ -1,3 +1,5 @@
+"""Basic environment details & attendant functions for the test environment"""
+
 import gpgme
 import os
 
@@ -16,6 +18,7 @@ KEYPARAMS = """
 
 # The credtests dir
 TESTDIR = os.path.abspath(os.path.dirname(__file__))
+
 # The credtests fixtures subdir
 FIXTURESDIR = os.path.join(TESTDIR, 'fixtures')
 

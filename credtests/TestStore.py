@@ -1,14 +1,17 @@
-import credtests
-from cred.Store import Store
+"Test the core storage wrapper around yaml and gpg: cred.Store"""
 
 import logging
 import shutil
-import yaml
-from os import path, rmdir
+from os import path
+
+import credtests
+from cred.Store import Store
 
 class TestStore(object):
+    """Environment details for testing cred.Store"""
 
     def setUp(self):
+        """Initialize the environment: logging, fake config"""
         
         # The code logs, so lets save those
         log_file = path.join(path.dirname(__file__), 'logs/TestStore.log')
@@ -35,7 +38,7 @@ class TestStore(object):
         self.creds = Store(**self.config)
 
     def tearDown(self):
-        # remove the autocreated credential directory
+        """Remove the autocreated credential directory and contents"""
         shutil.rmtree(self.config['credentials'])
 
     def test_a(self):
@@ -46,7 +49,6 @@ class TestStore(object):
     def test_b(self):
         """Can we add a simple credential?"""
         name = 'example.com'
-        cred_path = self.creds.get_path(name)
         credential = {'username': 'wat', 'password': 'hummus'}
         new_cred = list()
         for key, value in credential.iteritems():

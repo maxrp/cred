@@ -22,7 +22,7 @@ def clean_fixtures(fixtures=credtests.FIXTURESDIR):
     local('rm -rf {0}'.format(test_files))
 
 def lint():
-    local('pylint cred/*.py setup.py tests/*.py | tee pylint.log | less')
+    local('pylint cred/*.py setup.py credtests/*.py | tee pylint.log | less')
 
 def list_test_keys(fixtures=credtests.FIXTURESDIR):
     os.environ['GNUPGHOME']=fixtures
