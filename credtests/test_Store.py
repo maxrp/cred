@@ -3,6 +3,7 @@ from cred.Store import Store
 
 import logging
 import shutil
+import yaml
 from os import path, rmdir
 
 class TestStore(object):
@@ -46,7 +47,9 @@ class TestStore(object):
         """Can we add a simple credential?"""
         name = 'example.com'
         cred_path = self.creds.get_path(name)
-        new_cred = ['username: wat', 'password: hummus']
-        expected_cred = '\n'.join(new_cred)
-        saved_cred = self.creds.save(name, new_cred)
-        assert saved_cred == expected_cred
+        credential = {'username': 'wat', 'password': 'hummus'}
+        new_cred = list()
+        for key, value in credential.iteritems():
+            new_cred.append("{0}: {1}\n".format(key, value))
+        saved = self.creds.save(name, new_cred)
+        assert saved == credential
