@@ -1,5 +1,3 @@
-"""Utilities for test cases."""
-
 import gpgme
 import os
 
@@ -16,7 +14,12 @@ KEYPARAMS = """
 </GnupgKeyParms>
 """
 
-def genkeys(fixturesdir):
+# The credtests dir
+TESTDIR = os.path.abspath(os.path.dirname(__file__))
+# The credtests fixtures subdir
+FIXTURESDIR = os.path.join(TESTDIR, 'fixtures')
+
+def gen_keys(fixturesdir=FIXTURESDIR):
     """Generate keys for the test environment fixturesdir."""
     ctx = gpgme.Context()
     os.environ['GNUPGHOME'] = fixturesdir
@@ -25,9 +28,3 @@ def genkeys(fixturesdir):
     [uid] = key.uids
     print '{0}\n\t{1}'.format(uid.uid, result.fpr)
     del os.environ['GNUPGHOME']
-
-if __name__ == '__main__':
-    print 'Generating a key with the parameters:\n{}'.format(KEYPARAMS)
-    testdir = os.path.dirname(__file__)
-    fixturesdir = os.path.join(testdir, 'fixtures')
-    genkeys(fixturesdir)

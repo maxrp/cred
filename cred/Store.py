@@ -20,7 +20,6 @@ class Store(object):
         ):
         # force a sane default umask
         os.umask(0077)
-
         self.credentials = credentials
         self.default_key = default_key
         self.default_recipients = default_recipients
@@ -28,7 +27,6 @@ class Store(object):
         self.passphrase = None
         self.sign = sign
 
-        # checking the veracity of the config
         # does the passwords, dir exist? do we have perms?
         self.__ensure_path(self.credentials)
 

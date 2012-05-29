@@ -1,3 +1,4 @@
+import credtests
 from cred.Store import Store
 
 import logging
@@ -17,23 +18,20 @@ class TestStore(object):
                             filename=log_file
                             )
         
-        # Where fixture resource files are kept
-        fixtures = path.join(path.dirname(__file__), 'fixtures')
-
         # test config for Store
         self.config = {
-            "credentials":          path.join(fixtures, 'credentials'),
-            "default_key":         'fakekey',
-            "default_recipients":   [],
+            "credentials":          path.join(credtests.FIXTURESDIR, 
+                                              'credentials'),
+            "default_key":         'fakef@example.com',
+            "default_recipients":   ['fakef@example.com'],
             "extension":            '.yaml.gpg',
-            "gpg_home":             path.join(fixtures, 'gpghome'),
+            "gpg_home":             credtests.FIXTURESDIR,
             "sign":                 True,
             "use_agent":            False,
             "verbose":              True,
         }
 
         self.creds = Store(**self.config)
-        self.creds.passphrase = 'federal-llama-dingus'
 
     def tearDown(self):
         # remove the autocreated credential directory
