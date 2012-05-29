@@ -5,7 +5,7 @@ conf.yaml
 build
 cred.egg-info
 dist
-pylint.log
+*.log
 *.gpg
 *.gpg~
 random_seed
