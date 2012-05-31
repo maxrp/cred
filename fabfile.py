@@ -3,28 +3,25 @@ import gpgme
 import os
 import credtests
 
-def make_fixtures(fixtures=credtests.FIXTURESDIR):
+def _make_fixtures(fixtures=credtests.FIXTURESDIR):
     """Perform the time & entropy expensive generation of keys for testing."""
     secring = os.path.join(fixtures, 'secring.gpg')
     if not os.path.exists(secring):
         credtests.gen_keys(fixtures)
     else:
-        print 'Skipping key generation, secring exists:'
-        list_test_keys()
+        print 'Skipping key generation, secring exists.'
 
 def clean():
+    """Removes pyc, egg-info, dist, build and so on."""
     local('find . -name "*.pyc" -exec rm -rf {} \;')
-    local('rm -rf cred.egg-info dist build cred.egg-info pylint.log test.log')
-
-def clean_fixtures(fixtures=credtests.FIXTURESDIR):
-    """Delete any generated testing resources."""
-    test_files = os.path.join(fixtures, '*.gpg*')
-    local('rm -rf {0}'.format(test_files))
+    local('rm -rf cred.egg-info dist build cred.egg-info *.log')
 
 def lint():
+    """Run pylint on the package and tests."""
     local('pylint cred/*.py setup.py credtests/*.py | tee pylint.log | less')
 
 def list_test_keys(fixtures=credtests.FIXTURESDIR):
+    """List keys available for the test process."""
     os.environ['GNUPGHOME']=fixtures
     ctx = gpgme.Context()
     secring = os.path.join(fixtures, 'secring.gpg')
@@ -37,7 +34,9 @@ def list_test_keys(fixtures=credtests.FIXTURESDIR):
         del os.environ['GNUPGHOME']
 
 def test():
-    make_fixtures()
+    """Run and log nosetests, generating test GPG keys if needed."""
+    _make_fixtures()
+    list_test_keys()
     local('nosetests -v 2>&1 | tee test.log | less')
 
 def install():
