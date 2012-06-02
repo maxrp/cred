@@ -1,4 +1,7 @@
 "Test the core storage wrapper around yaml and gpg: cred.Store"""
+# TODO: test signing of credentials
+# TODO: test multiple recipients
+# TODO: test symmetric encryption
 
 import logging
 import shutil
