@@ -30,12 +30,11 @@ class TestStore(object):
             "credentials":          path.join(credtests.FIXTURESDIR, 
                                               'credentials'),
             "default_key":         'fakef@example.com',
-            "default_recipients":   ['fakef@example.com'],
+            "default_recipients":   [],
             "extension":            '.yaml.gpg',
             "gpg_home":             credtests.FIXTURESDIR,
             "sign":                 True,
             "use_agent":            False,
-            "verbose":              True,
         }
 
         self.creds = Store(**self.config)
