@@ -54,6 +54,25 @@ class TestStore(object):
         assert path.exists(self.config['credentials'])
 
     def test_b(self):
-        """Can we add a simple credential?"""
+        """Does Store.save() work?"""
         saved = self.creds.save(self.test_name, self.test_cred_ui)
         assert saved == self.test_cred
+
+    def test_c(self):
+        """Does Store.get() work?"""
+        saved = self.creds.save(self.test_name, self.test_cred_ui)
+        stored = self.creds.get(self.test_name)
+        # the return from get() should be the same as the return from save()
+        assert stored == saved
+        # and the return from get() should be the same as the test_cred dict
+        assert stored == self.test_cred
+
+    def test_d(self):
+        """Does Store.{save,get}('ns/{test_name}') work?"""
+        fake_ns = 'ns'
+        namespace = "{0}/{1.test_name}".format(fake_ns, self)
+        saved = self.creds.save(namespace, self.test_cred_ui)
+        assert saved == self.test_cred
+        # the directory which should be autocreated
+        expected_ns_path = path.join(self.config['credentials'], fake_ns)
+        assert path.exists(expected_ns_path)
