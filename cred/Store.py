@@ -1,7 +1,12 @@
-import gnupg
+import gpgme
 import logging
 import os, errno
 import yaml
+
+try:
+    from io import BytesIO
+except ImportError:
+    from StringIO import StringIO as BytesIO
 
 class NeedsPassphrase(Exception):
     pass
@@ -16,13 +21,11 @@ class Store(object):
             gpg_home,
             sign,
             use_agent,
-            verbose,
         ):
         # force a sane default umask
         os.umask(0077)
         self.credentials = credentials
         self.default_key = default_key
-        self.default_recipients = default_recipients
         self.extension = extension
         self.passphrase = None
         self.sign = sign
@@ -37,11 +40,17 @@ class Store(object):
         if not agent or not use_agent:
             use_agent = False
 
-        self.gpg = gnupg.GPG(
-                                gnupghome=gpg_home,
-                                use_agent=use_agent,
-                                verbose=verbose
-                            )
+        # initialize the gpgme context
+        self.gpg = gpgme.Context()
+        self.gpg.armor = True
+
+        # load the keys of the default recipients
+        self.default_recipients = list()
+        for keyid in default_recipients:
+            self.default_recipients.append(self.gpg.get_key(keyid))
+        # load self
+        self.default_key = self.gpg.get_key(default_key)
+        self.default_recipients.append(self.default_key)
 
     def __open(self, path, mode):
         """Wrap open() for logging, error clarification (probably should move 
@@ -71,69 +80,45 @@ class Store(object):
                 raise
         else:
             logging.debug("Created the nonexistant %s.", path)
-        
-
-    def __cryptwrap(self, fun, encrypted_file, *args, **kwargs):
-        """
-        A helper function to enforce some basic logic (mostly injecting a
-        passphrase if necessary) and implement logging of calls out to the 
-        gnupg library.
-
-        I should eventually handle some of the recoverable cases. Potential 
-        values of cred.status are:
-            'signature bad'
-            'signature good'
-            'signature valid'
-            'signature error'
-            'no public key'
-            'need symmetric passphrase'
-            'decryption incomplete'
-            'encryption incomplete'
-            'decryption ok'
-            'encryption ok'
-            'invalid recipient'
-            'key expired'
-            'sig created'
-            'sig expired'
-            'need passphrase'
-        """
-        logging.debug("Trying method: %s", fun)
-        
-        # clone the method from the gpg class
-        method = getattr(self.gpg, fun)
-        
-        if self.passphrase:
-            kwargs['passphrase'] = self.passphrase 
-
-        cred = method(encrypted_file, *args, **kwargs)
-
-        if cred.ok:
-            return cred
-        elif cred.status == 'need passphrase':
-            raise NeedsPassphrase()
-        else:
-            raise Exception("%s failed" % fun, cred.status)
             
-    def __decrypt(self, name, *args, **kwargs):
+    def __decrypt(self, name):
         """Internal decrypt function."""
         # TODO: implement signature verification
         path = self.get_path(name)
         with self.__open(path, "rb") as encrypted_file:
-            return self.__cryptwrap(
-                                    'decrypt_file',
-                                    encrypted_file,
-                                    *args,
-                                    **kwargs
-                                    )
+            # is there a better way for: file -> buffer ?
+            ciphertext = BytesIO()
+            for line in encrypted_file.readlines():
+                ciphertext.write(line)
+        
+        # rewind the cipher and decrypt to the cred buffer
+        ciphertext.seek(0)
+        cred = BytesIO()
+        self.gpg.decrypt(ciphertext, cred)
+        
+        # rewind cred and return all of it
+        cred.seek(0)
+        return cred.read()
 
-    def __encrypt(self, name, data, *args, **kwargs):
+    def __encrypt(self, name, data):
         """Internal encrypt function."""
-        if self.sign:
-            kwargs['sign'] = self.default_key
+        # TODO: implement signing
+        plaintext = BytesIO(data)
+        ciphertext = BytesIO()
+        try:
+            self.gpg.encrypt(self.default_recipients,
+                             gpgme.ENCRYPT_ALWAYS_TRUST,
+                             plaintext,
+                             ciphertext)
+        except:
+            raise
+
         path = self.get_path(name)
+        # rewind ciphertext
+        ciphertext.seek(0)
         with self.__open(path, "wb") as encrypted_file:
-            encrypted_cred = self.__cryptwrap('encrypt', data, *args, **kwargs)
-            encrypted_file.write(str(encrypted_cred))
+            for line in ciphertext.readlines():
+                encrypted_file.write(line.encode('ASCII'))
             encrypted_file.flush()
 
     def save(self, name, new_cred):
@@ -142,7 +127,7 @@ class Store(object):
         would be loaded."""
         logging.debug("Saving cred: %s" , name)
         new_cred = "\n".join(new_cred)
-        self.__encrypt(name, new_cred, self.default_recipients)
+        self.__encrypt(name, new_cred)
         return self.get(name)
 
     def get_path(self, name):
