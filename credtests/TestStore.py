@@ -76,3 +76,20 @@ class TestStore(object):
         # the directory which should be autocreated
         expected_ns_path = path.join(self.config['credentials'], fake_ns)
         assert path.exists(expected_ns_path)
+
+    def test_e(self):
+        """Are file creations constrained to the configured directory?"""
+        bogus_ns = '../../BOGUS-ACCIDENT'
+        namespace = "{0}/{1.test_name}".format(bogus_ns, self)
+        try:
+            self.creds.save(namespace, self.test_cred_ui)
+        except Exception as err:
+            # Store could raise better exceptions, but does it raise the one
+            # it should raise?
+            msg, explanation = err.args
+            logging.debug("%s: %s", msg, explanation)
+            assert msg == 'Path error'
+        else:
+            # no matter what else happened, check that the dir wasn't made
+            attempted_path = path.join(self.config['credentials'], bogus_ns)
+            assert not path.exists(attempted_path)
